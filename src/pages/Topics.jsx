@@ -2,32 +2,32 @@ import { useEffect, useState } from "react";
 import TopicList from "../components/TopicList";
 
 function Topics() {
-  const [topics, setTopics] = useState(() => {
-    const savedTopics = localStorage.getItem("topics");
-    return savedTopics
-      ? JSON.parse(savedTopics)
-      : [
-          { id: 1, title: "HTML", status: "Done" },
-          { id: 2, title: "CSS", status: "In Progress" },
-          { id: 3, title: "JavaScript", status: "Not Started" },
-        ];
-  });
+  const [topics, setTopics] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem("topics", JSON.stringify(topics));
-  }, [topics]);
+    fetch("http://localhost:5000/topics")
+      .then((res) => res.json())
+      .then((data) => setTopics(data));
+  }, []);
 
   function deleteTopic(id) {
-    setTopics((prevTopics) => prevTopics.filter((topic) => topic.id !== id));
+    fetch(`http://localhost:5000/topics/${id}`, {
+      method: "DELETE",
+    }).then(() => {
+      setTopics((prevTopics) => prevTopics.filter((topic) => topic.id !== id));
+    });
   }
 
   function addTopic(title) {
-    const newTopic = {
-      id: Date.now(),
-      title,
-      status: "Not Started",
-    };
-    setTopics((prevTopics) => [...prevTopics, newTopic]);
+    fetch("http://localhost:5000/topics", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title }),
+    })
+      .then((res) => res.json())
+      .then((newTopic) => {
+        setTopics((prevTopics) => [...prevTopics, newTopic]);
+      });
   }
 
   return (

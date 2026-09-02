@@ -2,50 +2,34 @@ import { useEffect, useState } from "react";
 import ProjectList from "../components/ProjectList";
 
 function Projects() {
-  const [projects, setProjects] = useState(() => {
-    const savedProjects = localStorage.getItem("projects");
-    return savedProjects
-      ? JSON.parse(savedProjects)
-      : [
-          {
-            id: 1,
-            name: "DevTrack",
-            description: "Full-stack learning progress tracker",
-            status: "In Progress",
-          },
-          {
-            id: 2,
-            name: "Portfolio Website",
-            description: "Personal portfolio for showing projects",
-            status: "Done",
-          },
-          {
-            id: 3,
-            name: "Weather App",
-            description: "Simple app using API data",
-            status: "Not Started",
-          },
-        ];
-  });
+  const [projects, setProjects] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem("projects", JSON.stringify(projects));
-  }, [projects]);
+    fetch("http://localhost:5000/projects")
+      .then((res) => res.json())
+      .then((data) => setProjects(data));
+  }, []);
 
   function deleteProject(id) {
-    setProjects((prevProjects) =>
-      prevProjects.filter((project) => project.id !== id)
-    );
+    fetch(`http://localhost:5000/projects/${id}`, {
+      method: "DELETE",
+    }).then(() => {
+      setProjects((prevProjects) =>
+        prevProjects.filter((project) => project.id !== id)
+      );
+    });
   }
 
   function addProject(name, description) {
-    const newProject = {
-      id: Date.now(),
-      name,
-      description,
-      status: "Not Started",
-    };
-    setProjects((prevProjects) => [...prevProjects, newProject]);
+    fetch("http://localhost:5000/projects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, description }),
+    })
+      .then((res) => res.json())
+      .then((newProject) => {
+        setProjects((prevProjects) => [...prevProjects, newProject]);
+      });
   }
 
   return (

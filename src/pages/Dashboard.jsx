@@ -5,102 +5,78 @@ import TopicList from "../components/TopicList";
 import ProjectList from "../components/ProjectList";
 
 function Dashboard() {
-  const [topics, setTopics] = useState(() => {
-    const savedTopics = localStorage.getItem("topics");
-    return savedTopics
-      ? JSON.parse(savedTopics)
-      : [
-          { id: 1, title: "HTML", status: "Done" },
-          { id: 2, title: "CSS", status: "In Progress" },
-          { id: 3, title: "JavaScript", status: "Not Started" },
-        ];
-  });
-
-  const [projects, setProjects] = useState(() => {
-    const savedProjects = localStorage.getItem("projects");
-    return savedProjects
-      ? JSON.parse(savedProjects)
-      : [
-          {
-            id: 1,
-            name: "DevTrack",
-            description: "Full-stack learning progress tracker",
-            status: "In Progress",
-          },
-          {
-            id: 2,
-            name: "Portfolio Website",
-            description: "Personal portfolio for showing projects",
-            status: "Done",
-          },
-          {
-            id: 3,
-            name: "Weather App",
-            description: "Simple app using API data",
-            status: "Not Started",
-          },
-        ];
-  });
-
-  const [tasks, setTasks] = useState(() => {
-    const savedTasks = localStorage.getItem("tasks");
-    return savedTasks
-      ? JSON.parse(savedTasks)
-      : [
-          { id: 1, title: "CSS Grid", done: false },
-          { id: 2, title: "JavaScript DOM", done: false },
-          { id: 3, title: "HTML Review", done: true },
-        ];
-  });
+  const [topics, setTopics] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem("topics", JSON.stringify(topics));
-  }, [topics]);
+    fetch("http://localhost:5000/topics")
+      .then((res) => res.json())
+      .then((data) => setTopics(data));
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem("projects", JSON.stringify(projects));
-  }, [projects]);
+    fetch("http://localhost:5000/projects")
+      .then((res) => res.json())
+      .then((data) => setProjects(data));
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-  }, [tasks]);
+    fetch("http://localhost:5000/tasks")
+      .then((res) => res.json())
+      .then((data) => setTasks(data));
+  }, []);
 
   function deleteTopic(id) {
-    setTopics((prevTopics) => prevTopics.filter((topic) => topic.id !== id));
+    fetch(`http://localhost:5000/topics/${id}`, { method: "DELETE" }).then(() => {
+      setTopics((prev) => prev.filter((topic) => topic.id !== id));
+    });
   }
 
   function addTopic(title) {
-    const newTopic = { id: Date.now(), title, status: "Not Started" };
-    setTopics((prevTopics) => [...prevTopics, newTopic]);
+    fetch("http://localhost:5000/topics", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title }),
+    })
+      .then((res) => res.json())
+      .then((newTopic) => setTopics((prev) => [...prev, newTopic]));
   }
 
   function deleteProject(id) {
-    setProjects((prevProjects) =>
-      prevProjects.filter((project) => project.id !== id)
-    );
+    fetch(`http://localhost:5000/projects/${id}`, { method: "DELETE" }).then(() => {
+      setProjects((prev) => prev.filter((project) => project.id !== id));
+    });
   }
 
   function addProject(name, description) {
-    const newProject = {
-      id: Date.now(),
-      name,
-      description,
-      status: "Not Started",
-    };
-    setProjects((prevProjects) => [...prevProjects, newProject]);
+    fetch("http://localhost:5000/projects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, description }),
+    })
+      .then((res) => res.json())
+      .then((newProject) => setProjects((prev) => [...prev, newProject]));
   }
 
   function toggleTask(id) {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === id ? { ...task, done: !task.done } : task
-      )
-    );
+    fetch(`http://localhost:5000/tasks/${id}`, { method: "PUT" })
+      .then((res) => res.json())
+      .then((updatedTask) => {
+        setTasks((prev) =>
+          prev.map((task) => (task.id === id ? updatedTask : task))
+        );
+      });
   }
 
   function addTask(title) {
-    const newTask = { id: Date.now(), title, done: false };
-    setTasks((prevTasks) => [...prevTasks, newTask]);
+    fetch("http://localhost:5000/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title }),
+    })
+      .then((res) => res.json())
+      .then((newTask) => setTasks((prev) => [...prev, newTask]));
   }
 
   const totalTopics = topics.length;

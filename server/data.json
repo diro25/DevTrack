@@ -1,0 +1,44 @@
+{
+  "topics": [
+    {
+      "id": 1,
+      "title": "HTML",
+      "status": "Done"
+    },
+    {
+      "id": 2,
+      "title": "CSS",
+      "status": "In Progress"
+    },
+    {
+      "id": 3,
+      "title": "JavaScript",
+      "status": "Not Started"
+    },
+    {
+      "id": 1788348231401,
+      "title": "Test123",
+      "status": "Not Started"
+    }
+  ],
+  "projects": [
+    {
+      "id": 1,
+      "name": "DevTrack",
+      "description": "Full-stack learning progress tracker",
+      "status": "In Progress"
+    },
+    {
+      "id": 2,
+      "name": "Portfolio Website",
+      "description": "Personal portfolio for showing projects",
+      "status": "Done"
+    },
+    {
+      "id": 3,
+      "name": "Weather App",
+      "description": "Simple app using API data",
+      "status": "Not Started"
+    }
+  ]
+}

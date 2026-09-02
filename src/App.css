@@ -606,3 +606,11 @@ body {
   font-size: 13px;
   color: #6b7280;
 }
+.auth-error {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}

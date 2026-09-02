@@ -1,13 +1,37 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   function handleSubmit(e) {
     e.preventDefault();
-    alert(`Registering ${name} with ${email}`);
+    setError("");
+
+    fetch("http://localhost:5000/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Registration failed");
+        }
+        return data;
+      })
+      .then((data) => {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("userName", data.name);
+        navigate("/dashboard");
+      })
+      .catch((err) => {
+        setError(err.message);
+      });
   }
 
   return (
@@ -15,6 +39,8 @@ function Register() {
       <div className="auth-card">
         <h1>Register</h1>
         <p>Create your account to start tracking progress.</p>
+
+        {error && <p className="auth-error">{error}</p>}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <label>Name</label>
