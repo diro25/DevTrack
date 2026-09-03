@@ -3,9 +3,12 @@ import TopicList from "../components/TopicList";
 
 function Topics() {
   const [topics, setTopics] = useState([]);
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    fetch("http://localhost:5000/topics")
+    fetch("http://localhost:5000/topics", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then((res) => res.json())
       .then((data) => setTopics(data));
   }, []);
@@ -13,21 +16,23 @@ function Topics() {
   function deleteTopic(id) {
     fetch(`http://localhost:5000/topics/${id}`, {
       method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
     }).then(() => {
-      setTopics((prevTopics) => prevTopics.filter((topic) => topic.id !== id));
+      setTopics((prev) => prev.filter((topic) => topic.id !== id));
     });
   }
 
   function addTopic(title) {
     fetch("http://localhost:5000/topics", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({ title }),
     })
       .then((res) => res.json())
-      .then((newTopic) => {
-        setTopics((prevTopics) => [...prevTopics, newTopic]);
-      });
+      .then((newTopic) => setTopics((prev) => [...prev, newTopic]));
   }
 
   return (
