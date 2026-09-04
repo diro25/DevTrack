@@ -627,3 +627,25 @@ body {
 .logout-btn:hover {
   color: #4338ca;
 }
+.topic-card {
+  cursor: pointer;
+}
+
+.topic-card button {
+  margin-top: 10px;
+  border: none;
+  background: #ef4444;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+.loading-message {
+  text-align: center;
+  margin-top: 60px;
+  font-size: 18px;
+  color: #6b7280;
+}
+
+.loading-message.error {
+  color: #dc2626;
+}

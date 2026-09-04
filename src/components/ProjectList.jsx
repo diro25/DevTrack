@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function ProjectList({ projects, onDelete, onAdd }) {
+function ProjectList({ projects, onDelete, onAdd, onToggle }) {
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
 
@@ -35,11 +35,24 @@ function ProjectList({ projects, onDelete, onAdd }) {
 
       <div className="project-grid">
         {projects.map((project) => (
-          <div key={project.id} className="project-card">
+          <div
+            key={project.id}
+            className="project-card"
+            onClick={() => onToggle(project.id)}
+            role="button"
+            tabIndex={0}
+          >
             <h4>{project.name}</h4>
             <p>{project.description}</p>
             <span>{project.status}</span>
-            <button onClick={() => onDelete(project.id)}>Delete</button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(project.id);
+              }}
+            >
+              Delete
+            </button>
           </div>
         ))}
       </div>

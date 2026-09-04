@@ -9,6 +9,13 @@ const app = express();
 const PORT = 5000;
 const JWT_SECRET = "devtrack-dev-secret-change-later";
 
+const STATUS_CYCLE = ["Not Started", "In Progress", "Done"];
+
+function nextStatus(current) {
+  const index = STATUS_CYCLE.indexOf(current);
+  return STATUS_CYCLE[(index + 1) % STATUS_CYCLE.length];
+}
+
 app.use(cors());
 app.use(express.json());
 
@@ -65,64 +72,154 @@ app.post("/login", async (req, res) => {
 
 // ---- TOPICS ----
 app.get("/topics", requireAuth, (req, res) => {
-  const topics = db.prepare("SELECT * FROM topics WHERE user_id = ?").all(req.userId);
+  const topics = db
+    .prepare("SELECT * FROM topics WHERE user_id = ?")
+    .all(req.userId);
   res.json(topics);
 });
 
 app.post("/topics", requireAuth, (req, res) => {
   const { title } = req.body;
+
+  if (!title || !title.trim()) {
+    return res.status(400).json({ error: "Title is required" });
+  }
+
   const result = db
-    .prepare("INSERT INTO topics (user_id, title, status) VALUES (?, ?, 'Not Started')")
-    .run(req.userId, title);
-  const newTopic = db.prepare("SELECT * FROM topics WHERE id = ?").get(result.lastInsertRowid);
+    .prepare(
+      "INSERT INTO topics (user_id, title, status) VALUES (?, ?, 'Not Started')"
+    )
+    .run(req.userId, title.trim());
+
+  const newTopic = db
+    .prepare("SELECT * FROM topics WHERE id = ?")
+    .get(result.lastInsertRowid);
+
   res.status(201).json(newTopic);
 });
 
+app.put("/topics/:id", requireAuth, (req, res) => {
+  const topic = db
+    .prepare("SELECT * FROM topics WHERE id = ? AND user_id = ?")
+    .get(req.params.id, req.userId);
+
+  if (!topic) return res.status(404).send();
+
+  const updatedStatus = nextStatus(topic.status);
+
+  db.prepare("UPDATE topics SET status = ? WHERE id = ?").run(
+    updatedStatus,
+    req.params.id
+  );
+
+  const updated = db.prepare("SELECT * FROM topics WHERE id = ?").get(req.params.id);
+  res.json(updated);
+});
+
 app.delete("/topics/:id", requireAuth, (req, res) => {
-  db.prepare("DELETE FROM topics WHERE id = ? AND user_id = ?").run(req.params.id, req.userId);
+  db.prepare("DELETE FROM topics WHERE id = ? AND user_id = ?").run(
+    req.params.id,
+    req.userId
+  );
   res.status(204).send();
 });
 
 // ---- PROJECTS ----
 app.get("/projects", requireAuth, (req, res) => {
-  const projects = db.prepare("SELECT * FROM projects WHERE user_id = ?").all(req.userId);
+  const projects = db
+    .prepare("SELECT * FROM projects WHERE user_id = ?")
+    .all(req.userId);
   res.json(projects);
 });
 
 app.post("/projects", requireAuth, (req, res) => {
   const { name, description } = req.body;
+
+  if (!name || !name.trim() || !description || !description.trim()) {
+    return res
+      .status(400)
+      .json({ error: "Name and description are required" });
+  }
+
   const result = db
-    .prepare("INSERT INTO projects (user_id, name, description, status) VALUES (?, ?, ?, 'Not Started')")
-    .run(req.userId, name, description);
-  const newProject = db.prepare("SELECT * FROM projects WHERE id = ?").get(result.lastInsertRowid);
+    .prepare(
+      "INSERT INTO projects (user_id, name, description, status) VALUES (?, ?, ?, 'Not Started')"
+    )
+    .run(req.userId, name.trim(), description.trim());
+
+  const newProject = db
+    .prepare("SELECT * FROM projects WHERE id = ?")
+    .get(result.lastInsertRowid);
+
   res.status(201).json(newProject);
 });
 
+app.put("/projects/:id", requireAuth, (req, res) => {
+  const project = db
+    .prepare("SELECT * FROM projects WHERE id = ? AND user_id = ?")
+    .get(req.params.id, req.userId);
+
+  if (!project) return res.status(404).send();
+
+  const updatedStatus = nextStatus(project.status);
+
+  db.prepare("UPDATE projects SET status = ? WHERE id = ?").run(
+    updatedStatus,
+    req.params.id
+  );
+
+  const updated = db
+    .prepare("SELECT * FROM projects WHERE id = ?")
+    .get(req.params.id);
+
+  res.json(updated);
+});
+
 app.delete("/projects/:id", requireAuth, (req, res) => {
-  db.prepare("DELETE FROM projects WHERE id = ? AND user_id = ?").run(req.params.id, req.userId);
+  db.prepare("DELETE FROM projects WHERE id = ? AND user_id = ?").run(
+    req.params.id,
+    req.userId
+  );
   res.status(204).send();
 });
 
 // ---- TASKS ----
 app.get("/tasks", requireAuth, (req, res) => {
-  const tasks = db.prepare("SELECT * FROM tasks WHERE user_id = ?").all(req.userId);
+  const tasks = db
+    .prepare("SELECT * FROM tasks WHERE user_id = ?")
+    .all(req.userId);
   res.json(tasks);
 });
 
 app.post("/tasks", requireAuth, (req, res) => {
   const { title } = req.body;
+
+  if (!title || !title.trim()) {
+    return res.status(400).json({ error: "Title is required" });
+  }
+
   const result = db
     .prepare("INSERT INTO tasks (user_id, title, done) VALUES (?, ?, 0)")
-    .run(req.userId, title);
+    .run(req.userId, title.trim());
+
   const newTask = db.prepare("SELECT * FROM tasks WHERE id = ?").get(result.lastInsertRowid);
   res.status(201).json(newTask);
 });
 
 app.put("/tasks/:id", requireAuth, (req, res) => {
-  const task = db.prepare("SELECT * FROM tasks WHERE id = ? AND user_id = ?").get(req.params.id, req.userId);
+  const task = db
+    .prepare("SELECT * FROM tasks WHERE id = ? AND user_id = ?")
+    .get(req.params.id, req.userId);
+
   if (!task) return res.status(404).send();
+
   const newDone = task.done ? 0 : 1;
-  db.prepare("UPDATE tasks SET done = ? WHERE id = ?").run(newDone, req.params.id);
+
+  db.prepare("UPDATE tasks SET done = ? WHERE id = ?").run(
+    newDone,
+    req.params.id
+  );
+
   const updated = db.prepare("SELECT * FROM tasks WHERE id = ?").get(req.params.id);
   res.json(updated);
 });

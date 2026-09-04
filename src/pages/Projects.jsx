@@ -34,11 +34,23 @@ function Projects() {
       .then((res) => res.json())
       .then((newProject) => setProjects((prev) => [...prev, newProject]));
   }
+  function toggleProject(id) {
+  fetch(`http://localhost:5000/projects/${id}`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then((res) => res.json())
+    .then((updatedProject) => {
+      setProjects((prev) =>
+        prev.map((project) => (project.id === id ? updatedProject : project))
+      );
+    });
+}
 
   return (
     <div className="dashboard-page">
       <h2>Projects</h2>
-      <ProjectList projects={projects} onDelete={deleteProject} onAdd={addProject} />
+      <ProjectList projects={projects} onDelete={deleteProject} onAdd={addProject} onToggle={toggleProject} />
     </div>
   );
 }

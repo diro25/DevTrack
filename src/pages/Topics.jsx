@@ -11,7 +11,7 @@ function Topics() {
     })
       .then((res) => res.json())
       .then((data) => setTopics(data));
-  }, []);
+  }, [token]);
 
   function deleteTopic(id) {
     fetch(`http://localhost:5000/topics/${id}`, {
@@ -35,10 +35,28 @@ function Topics() {
       .then((newTopic) => setTopics((prev) => [...prev, newTopic]));
   }
 
+  function toggleTopic(id) {
+    fetch(`http://localhost:5000/topics/${id}`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((updatedTopic) => {
+        setTopics((prev) =>
+          prev.map((topic) => (topic.id === updatedTopic.id ? updatedTopic : topic))
+        );
+      });
+  }
+
   return (
     <div className="dashboard-page">
       <h2>Topics</h2>
-      <TopicList topics={topics} onDelete={deleteTopic} onAdd={addTopic} />
+      <TopicList
+        topics={topics}
+        onDelete={deleteTopic}
+        onAdd={addTopic}
+        onToggle={toggleTopic}
+      />
     </div>
   );
 }

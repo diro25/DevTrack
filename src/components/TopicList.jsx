@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function TopicList({ topics, onDelete, onAdd }) {
+function TopicList({ topics, onDelete, onAdd, onToggle }) {
   const [newTopic, setNewTopic] = useState("");
 
   function handleSubmit(e) {
@@ -13,6 +13,7 @@ function TopicList({ topics, onDelete, onAdd }) {
   return (
     <section className="topic-list">
       <h3>Learning Topics</h3>
+      <p>Total topics: {topics.length}</p>
 
       <form onSubmit={handleSubmit} className="topic-form">
         <input
@@ -26,10 +27,23 @@ function TopicList({ topics, onDelete, onAdd }) {
 
       <div className="topic-grid">
         {topics.map((topic) => (
-          <div key={topic.id} className="topic-card">
+          <div
+            key={topic.id}
+            className="topic-card"
+            onClick={() => onToggle(topic.id)}
+            role="button"
+            tabIndex={0}
+          >
             <h4>{topic.title}</h4>
             <p>{topic.status}</p>
-            <button onClick={() => onDelete(topic.id)}>Delete</button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(topic.id);
+              }}
+            >
+              Delete
+            </button>
           </div>
         ))}
       </div>
