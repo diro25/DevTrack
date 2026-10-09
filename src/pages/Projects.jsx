@@ -4,13 +4,21 @@ import ProjectList from "../components/ProjectList";
 function Projects() {
   const [projects, setProjects] = useState([]);
   const token = localStorage.getItem("token");
-
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   useEffect(() => {
     fetch("http://localhost:5000/projects", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
-      .then((data) => setProjects(data));
+      .then((data) => {
+        setProjects(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
   }, []);
 
   function deleteProject(id) {

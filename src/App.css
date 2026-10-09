@@ -649,3 +649,104 @@ body {
 .loading-message.error {
   color: #dc2626;
 }
+.progress-card {
+  background: white;
+  padding: 20px 24px;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.progress-bar-track {
+  background: #e5e7eb;
+  border-radius: 20px;
+  height: 12px;
+  margin: 12px 0;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  background: #4f46e5;
+  height: 100%;
+  border-radius: 20px;
+  transition: width 0.4s ease;
+}
+.task {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.task-delete-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 8px;
+}
+
+.task-delete-btn:hover {
+  color: #dc2626;
+}
+.task {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.task-delete-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 8px;
+}
+
+.task-delete-btn:hover {
+  color: #dc2626;
+}
+/* Polish pass: hover states + smooth transitions */
+.topic-card,
+.project-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+}
+
+.topic-card:hover,
+.project-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.stat-box {
+  transition: transform 0.15s ease;
+}
+
+.stat-box:hover {
+  transform: translateY(-2px);
+}
+
+button {
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+.task {
+  transition: background 0.15s ease;
+  border-radius: 8px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.task:hover {
+  background: #f9fafb;
+}
+
+.task.done span {
+  text-decoration: line-through;
+  color: #9ca3af;
+}

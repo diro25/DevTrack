@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import ProgressCard from "../components/ProgressCard";
 import TaskList from "../components/TaskList";
 import TopicList from "../components/TopicList";
 import ProjectList from "../components/ProjectList";
@@ -17,41 +16,39 @@ function Dashboard() {
 
     const authHeaders = { Authorization: `Bearer ${token}` };
 
-  async function loadData() {
-  try {
-    const [topicsRes, projectsRes, tasksRes] = await Promise.all([
-      fetch("http://localhost:5000/topics", { headers: authHeaders }),
-      fetch("http://localhost:5000/projects", { headers: authHeaders }),
-      fetch("http://localhost:5000/tasks", { headers: authHeaders }),
-    ]);
+    async function loadData() {
+      try {
+        const [topicsRes, projectsRes, tasksRes] = await Promise.all([
+          fetch("http://localhost:5000/topics", { headers: authHeaders }),
+          fetch("http://localhost:5000/projects", { headers: authHeaders }),
+          fetch("http://localhost:5000/tasks", { headers: authHeaders }),
+        ]);
 
-    const [topicsData, projectsData, tasksData] = await Promise.all([
-      topicsRes.json(),
-      projectsRes.json(),
-      tasksRes.json(),
-    ]);
+        const [topicsData, projectsData, tasksData] = await Promise.all([
+          topicsRes.json(),
+          projectsRes.json(),
+          tasksRes.json(),
+        ]);
 
-    setTopics(topicsData);
-    setProjects(projectsData);
-    setTasks(tasksData);
-  } catch (err) {
-    setError("Could not load your data. Is the server running?");
-  } finally {
-    setLoading(false);
-  }
-}
+        setTopics(topicsData);
+        setProjects(projectsData);
+        setTasks(tasksData);
+      } catch (err) {
+        setError("Could not load your data. Is the server running?");
+      } finally {
+        setLoading(false);
+      }
+    }
 
     loadData();
   }, [token]);
 
   async function deleteTopic(id) {
     const authHeaders = { Authorization: `Bearer ${token}` };
-
     await fetch(`http://localhost:5000/topics/${id}`, {
       method: "DELETE",
       headers: authHeaders,
     });
-
     setTopics((prev) => prev.filter((topic) => topic.id !== id));
   }
 
@@ -60,25 +57,21 @@ function Dashboard() {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     };
-
     const res = await fetch("http://localhost:5000/topics", {
       method: "POST",
       headers: jsonAuthHeaders,
       body: JSON.stringify({ title }),
     });
-
     const newTopic = await res.json();
     setTopics((prev) => [...prev, newTopic]);
   }
 
   async function toggleTopic(id) {
     const authHeaders = { Authorization: `Bearer ${token}` };
-
     const res = await fetch(`http://localhost:5000/topics/${id}`, {
       method: "PUT",
       headers: authHeaders,
     });
-
     const updatedTopic = await res.json();
     setTopics((prev) =>
       prev.map((topic) => (topic.id === updatedTopic.id ? updatedTopic : topic))
@@ -87,12 +80,10 @@ function Dashboard() {
 
   async function deleteProject(id) {
     const authHeaders = { Authorization: `Bearer ${token}` };
-
     await fetch(`http://localhost:5000/projects/${id}`, {
       method: "DELETE",
       headers: authHeaders,
     });
-
     setProjects((prev) => prev.filter((project) => project.id !== id));
   }
 
@@ -101,25 +92,21 @@ function Dashboard() {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     };
-
     const res = await fetch("http://localhost:5000/projects", {
       method: "POST",
       headers: jsonAuthHeaders,
       body: JSON.stringify({ name, description }),
     });
-
     const newProject = await res.json();
     setProjects((prev) => [...prev, newProject]);
   }
 
   async function toggleProject(id) {
     const authHeaders = { Authorization: `Bearer ${token}` };
-
     const res = await fetch(`http://localhost:5000/projects/${id}`, {
       method: "PUT",
       headers: authHeaders,
     });
-
     const updatedProject = await res.json();
     setProjects((prev) =>
       prev.map((project) =>
@@ -130,12 +117,10 @@ function Dashboard() {
 
   async function toggleTask(id) {
     const authHeaders = { Authorization: `Bearer ${token}` };
-
     const res = await fetch(`http://localhost:5000/tasks/${id}`, {
       method: "PUT",
       headers: authHeaders,
     });
-
     const updatedTask = await res.json();
     setTasks((prev) =>
       prev.map((task) => (task.id === id ? updatedTask : task))
@@ -147,23 +132,35 @@ function Dashboard() {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     };
-
     const res = await fetch("http://localhost:5000/tasks", {
       method: "POST",
       headers: jsonAuthHeaders,
       body: JSON.stringify({ title }),
     });
-
     const newTask = await res.json();
     setTasks((prev) => [...prev, newTask]);
+  }
+
+  async function deleteTask(id) {
+    const authHeaders = { Authorization: `Bearer ${token}` };
+    await fetch(`http://localhost:5000/tasks/${id}`, {
+      method: "DELETE",
+      headers: authHeaders,
+    });
+    setTasks((prev) => prev.filter((task) => task.id !== id));
   }
 
   const totalTopics = topics.length;
   const totalProjects = projects.length;
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((task) => task.done).length;
+  const doneTopics = topics.filter((topic) => topic.status === "Done").length;
+  const topicsProgress =
+    totalTopics === 0 ? 0 : Math.round((doneTopics / totalTopics) * 100);
+
   if (loading) return <p className="loading-message">Loading your dashboard...</p>;
   if (error) return <p className="loading-message error">{error}</p>;
+
   return (
     <div className="dashboard-page">
       <h2>Welcome back, Dawa 👋</h2>
@@ -187,9 +184,18 @@ function Dashboard() {
       </section>
 
       <section className="progress-section">
-        <ProgressCard title="HTML" progress="100%" />
-        <ProgressCard title="CSS" progress="80%" />
-        <ProgressCard title="JavaScript" progress="40%" />
+        <div className="progress-card">
+          <h4>Topics Progress</h4>
+          <div className="progress-bar-track">
+            <div
+              className="progress-bar-fill"
+              style={{ width: `${topicsProgress}%` }}
+            ></div>
+          </div>
+          <p>
+            {doneTopics} of {totalTopics} topics done ({topicsProgress}%)
+          </p>
+        </div>
       </section>
 
       <TopicList
@@ -204,7 +210,12 @@ function Dashboard() {
         onAdd={addProject}
         onToggle={toggleProject}
       />
-      <TaskList tasks={tasks} onToggle={toggleTask} onAdd={addTask} />
+      <TaskList
+        tasks={tasks}
+        onToggle={toggleTask}
+        onAdd={addTask}
+        onDelete={deleteTask}
+      />
     </div>
   );
 }

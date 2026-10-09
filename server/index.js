@@ -224,6 +224,14 @@ app.put("/tasks/:id", requireAuth, (req, res) => {
   res.json(updated);
 });
 
+app.delete("/tasks/:id", requireAuth, (req, res) => {
+  db.prepare("DELETE FROM tasks WHERE id = ? AND user_id = ?").run(
+    req.params.id,
+    req.userId
+  );
+  res.status(204).send();
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

@@ -4,13 +4,21 @@ import TopicList from "../components/TopicList";
 function Topics() {
   const [topics, setTopics] = useState([]);
   const token = localStorage.getItem("token");
-
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   useEffect(() => {
     fetch("http://localhost:5000/topics", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
-      .then((data) => setTopics(data));
+      .then((data) => {
+        setTopics(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
   }, [token]);
 
   function deleteTopic(id) {
@@ -47,6 +55,9 @@ function Topics() {
         );
       });
   }
+
+  if (loading) return <p className="loading-message">Loading topics...</p>;
+  if (error) return <p className="loading-message error">{error}</p>;
 
   return (
     <div className="dashboard-page">

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function TaskList({ tasks, onToggle, onAdd }) {
+function TaskList({ tasks, onToggle, onAdd, onDelete }) {
   const [newTask, setNewTask] = useState("");
 
   function handleSubmit(e) {
@@ -37,12 +37,19 @@ function TaskList({ tasks, onToggle, onAdd }) {
       ) : (
         <ul className="task-items">
           {tasks.map((task) => (
-            <li
-              key={task.id}
-              className={task.done ? "task done" : "task"}
-              onClick={() => onToggle(task.id)}
-            >
-              {task.done ? "☑" : "☐"} {task.title}
+            <li key={task.id} className={task.done ? "task done" : "task"}>
+              <span onClick={() => onToggle(task.id)} style={{ cursor: "pointer" }}>
+                {task.done ? "☑" : "☐"} {task.title}
+              </span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(task.id);
+                }}
+                className="task-delete-btn"
+              >
+                ✕
+              </button>
             </li>
           ))}
         </ul>
