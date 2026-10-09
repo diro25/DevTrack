@@ -1,28 +1,25 @@
 import { useEffect, useState } from "react";
 import TopicList from "../components/TopicList";
+import { API_URL } from "../config";
 
 function Topics() {
   const [topics, setTopics] = useState([]);
-  const token = localStorage.getItem("token");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const token = localStorage.getItem("token");
+
   useEffect(() => {
-    fetch("http://localhost:5000/topics", {
+    fetch(`${API_URL}/topics`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
-      .then((data) => {
-        setTopics(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, [token]);
+      .then((data) => setTopics(data))
+      .catch(() => setError("Could not load your topics. Is the server running?"))
+      .finally(() => setLoading(false));
+  }, []);
 
   function deleteTopic(id) {
-    fetch(`http://localhost:5000/topics/${id}`, {
+    fetch(`${API_URL}/topics/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     }).then(() => {
@@ -31,7 +28,7 @@ function Topics() {
   }
 
   function addTopic(title) {
-    fetch("http://localhost:5000/topics", {
+    fetch(`${API_URL}/topics`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -44,14 +41,14 @@ function Topics() {
   }
 
   function toggleTopic(id) {
-    fetch(`http://localhost:5000/topics/${id}`, {
+    fetch(`${API_URL}/topics/${id}`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
       .then((updatedTopic) => {
         setTopics((prev) =>
-          prev.map((topic) => (topic.id === updatedTopic.id ? updatedTopic : topic))
+          prev.map((topic) => (topic.id === id ? updatedTopic : topic))
         );
       });
   }

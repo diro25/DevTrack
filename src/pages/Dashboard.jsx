@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import TaskList from "../components/TaskList";
 import TopicList from "../components/TopicList";
 import ProjectList from "../components/ProjectList";
+import { API_URL } from "../config";
 
 function Dashboard() {
   const [topics, setTopics] = useState([]);
@@ -19,9 +20,9 @@ function Dashboard() {
     async function loadData() {
       try {
         const [topicsRes, projectsRes, tasksRes] = await Promise.all([
-          fetch("http://localhost:5000/topics", { headers: authHeaders }),
-          fetch("http://localhost:5000/projects", { headers: authHeaders }),
-          fetch("http://localhost:5000/tasks", { headers: authHeaders }),
+          fetch(`${API_URL}/topics`, { headers: authHeaders }),
+          fetch(`${API_URL}/projects`, { headers: authHeaders }),
+          fetch(`${API_URL}/tasks`, { headers: authHeaders }),
         ]);
 
         const [topicsData, projectsData, tasksData] = await Promise.all([
@@ -45,7 +46,7 @@ function Dashboard() {
 
   async function deleteTopic(id) {
     const authHeaders = { Authorization: `Bearer ${token}` };
-    await fetch(`http://localhost:5000/topics/${id}`, {
+    await fetch(`${API_URL}/topics/${id}`, {
       method: "DELETE",
       headers: authHeaders,
     });
@@ -57,7 +58,7 @@ function Dashboard() {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     };
-    const res = await fetch("http://localhost:5000/topics", {
+    const res = await fetch(`${API_URL}/topics`, {
       method: "POST",
       headers: jsonAuthHeaders,
       body: JSON.stringify({ title }),
@@ -68,7 +69,7 @@ function Dashboard() {
 
   async function toggleTopic(id) {
     const authHeaders = { Authorization: `Bearer ${token}` };
-    const res = await fetch(`http://localhost:5000/topics/${id}`, {
+    const res = await fetch(`${API_URL}/topics/${id}`, {
       method: "PUT",
       headers: authHeaders,
     });
@@ -80,7 +81,7 @@ function Dashboard() {
 
   async function deleteProject(id) {
     const authHeaders = { Authorization: `Bearer ${token}` };
-    await fetch(`http://localhost:5000/projects/${id}`, {
+    await fetch(`${API_URL}/projects/${id}`, {
       method: "DELETE",
       headers: authHeaders,
     });
@@ -92,7 +93,7 @@ function Dashboard() {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     };
-    const res = await fetch("http://localhost:5000/projects", {
+    const res = await fetch(`${API_URL}/projects`, {
       method: "POST",
       headers: jsonAuthHeaders,
       body: JSON.stringify({ name, description }),
@@ -103,7 +104,7 @@ function Dashboard() {
 
   async function toggleProject(id) {
     const authHeaders = { Authorization: `Bearer ${token}` };
-    const res = await fetch(`http://localhost:5000/projects/${id}`, {
+    const res = await fetch(`${API_URL}/projects/${id}`, {
       method: "PUT",
       headers: authHeaders,
     });
@@ -117,7 +118,7 @@ function Dashboard() {
 
   async function toggleTask(id) {
     const authHeaders = { Authorization: `Bearer ${token}` };
-    const res = await fetch(`http://localhost:5000/tasks/${id}`, {
+    const res = await fetch(`${API_URL}/tasks/${id}`, {
       method: "PUT",
       headers: authHeaders,
     });
@@ -132,7 +133,7 @@ function Dashboard() {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     };
-    const res = await fetch("http://localhost:5000/tasks", {
+    const res = await fetch(`${API_URL}/tasks`, {
       method: "POST",
       headers: jsonAuthHeaders,
       body: JSON.stringify({ title }),
@@ -143,7 +144,7 @@ function Dashboard() {
 
   async function deleteTask(id) {
     const authHeaders = { Authorization: `Bearer ${token}` };
-    await fetch(`http://localhost:5000/tasks/${id}`, {
+    await fetch(`${API_URL}/tasks/${id}`, {
       method: "DELETE",
       headers: authHeaders,
     });
@@ -163,7 +164,7 @@ function Dashboard() {
 
   return (
     <div className="dashboard-page">
-      <h2>Welcome back, Dawa 👋</h2>
+      <h2>Welcome back, {localStorage.getItem("userName") || "friend"} 👋</h2>
       <p>Here is your learning progress today.</p>
 
       <section className="stats-bar">
