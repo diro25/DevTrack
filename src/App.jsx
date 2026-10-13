@@ -1,4 +1,11 @@
-import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Link,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import { useState, useEffect } from "react";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -6,11 +13,13 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Topics from "./pages/Topics";
 import Projects from "./pages/Projects";
+import { ToastProvider, useToast } from "./ToastContext";
 import "./App.css";
 
 function NavBar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { showToast } = useToast();
   const [token, setToken] = useState(localStorage.getItem("token"));
 
   useEffect(() => {
@@ -21,6 +30,7 @@ function NavBar() {
     localStorage.removeItem("token");
     localStorage.removeItem("userName");
     setToken(null);
+    showToast("You have been logged out", "info");
     navigate("/");
   }
 
@@ -47,15 +57,17 @@ function NavBar() {
 function App() {
   return (
     <BrowserRouter>
-      <NavBar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/topics" element={<Topics />} />
-        <Route path="/projects" element={<Projects />} />
-      </Routes>
+      <ToastProvider>
+        <NavBar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/topics" element={<Topics />} />
+          <Route path="/projects" element={<Projects />} />
+        </Routes>
+      </ToastProvider>
     </BrowserRouter>
   );
 }
