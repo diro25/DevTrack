@@ -2,35 +2,31 @@ import { useEffect, useState } from "react";
 import TaskList from "../components/TaskList";
 import TopicList from "../components/TopicList";
 import ProjectList from "../components/ProjectList";
-import { API_URL } from "../config";
+import { api } from "../api";
+import { useToast } from "../ToastContext";
 
 function Dashboard() {
+  const { showToast } = useToast();
   const [topics, setTopics] = useState([]);
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    if (!token) return;
-
-    const authHeaders = { Authorization: `Bearer ${token}` };
+    if (!localStorage.getItem("token")) {
+      setError("Please log in to see your dashboard.");
+      setLoading(false);
+      return;
+    }
 
     async function loadData() {
       try {
-        const [topicsRes, projectsRes, tasksRes] = await Promise.all([
-          fetch(`${API_URL}/topics`, { headers: authHeaders }),
-          fetch(`${API_URL}/projects`, { headers: authHeaders }),
-          fetch(`${API_URL}/tasks`, { headers: authHeaders }),
-        ]);
-
         const [topicsData, projectsData, tasksData] = await Promise.all([
-          topicsRes.json(),
-          projectsRes.json(),
-          tasksRes.json(),
+          api("/topics"),
+          api("/projects"),
+          api("/tasks"),
         ]);
-
         setTopics(topicsData);
         setProjects(projectsData);
         setTasks(tasksData);
@@ -42,113 +38,102 @@ function Dashboard() {
     }
 
     loadData();
-  }, [token]);
+  }, []);
 
-  async function deleteTopic(id) {
-    const authHeaders = { Authorization: `Bearer ${token}` };
-    await fetch(`${API_URL}/topics/${id}`, {
-      method: "DELETE",
-      headers: authHeaders,
-    });
-    setTopics((prev) => prev.filter((topic) => topic.id !== id));
-  }
-
+  // ---- Topics ----
   async function addTopic(title) {
-    const jsonAuthHeaders = {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    };
-    const res = await fetch(`${API_URL}/topics`, {
-      method: "POST",
-      headers: jsonAuthHeaders,
-      body: JSON.stringify({ title }),
-    });
-    const newTopic = await res.json();
-    setTopics((prev) => [...prev, newTopic]);
+    try {
+      const newTopic = await api("/topics", { method: "POST", body: { title } });
+      setTopics((prev) => [...prev, newTopic]);
+      showToast("Topic added");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
   }
 
   async function toggleTopic(id) {
-    const authHeaders = { Authorization: `Bearer ${token}` };
-    const res = await fetch(`${API_URL}/topics/${id}`, {
-      method: "PUT",
-      headers: authHeaders,
-    });
-    const updatedTopic = await res.json();
-    setTopics((prev) =>
-      prev.map((topic) => (topic.id === updatedTopic.id ? updatedTopic : topic))
-    );
+    try {
+      const updated = await api(`/topics/${id}`, { method: "PUT" });
+      setTopics((prev) => prev.map((t) => (t.id === id ? updated : t)));
+      showToast(`Status: ${updated.status}`, "info");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
   }
 
-  async function deleteProject(id) {
-    const authHeaders = { Authorization: `Bearer ${token}` };
-    await fetch(`${API_URL}/projects/${id}`, {
-      method: "DELETE",
-      headers: authHeaders,
-    });
-    setProjects((prev) => prev.filter((project) => project.id !== id));
+  async function deleteTopic(id) {
+    try {
+      await api(`/topics/${id}`, { method: "DELETE" });
+      setTopics((prev) => prev.filter((t) => t.id !== id));
+      showToast("Topic deleted", "info");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
   }
 
+  // ---- Projects ----
   async function addProject(name, description) {
-    const jsonAuthHeaders = {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    };
-    const res = await fetch(`${API_URL}/projects`, {
-      method: "POST",
-      headers: jsonAuthHeaders,
-      body: JSON.stringify({ name, description }),
-    });
-    const newProject = await res.json();
-    setProjects((prev) => [...prev, newProject]);
+    try {
+      const newProject = await api("/projects", {
+        method: "POST",
+        body: { name, description },
+      });
+      setProjects((prev) => [...prev, newProject]);
+      showToast("Project added");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
   }
 
   async function toggleProject(id) {
-    const authHeaders = { Authorization: `Bearer ${token}` };
-    const res = await fetch(`${API_URL}/projects/${id}`, {
-      method: "PUT",
-      headers: authHeaders,
-    });
-    const updatedProject = await res.json();
-    setProjects((prev) =>
-      prev.map((project) =>
-        project.id === updatedProject.id ? updatedProject : project
-      )
-    );
+    try {
+      const updated = await api(`/projects/${id}`, { method: "PUT" });
+      setProjects((prev) => prev.map((p) => (p.id === id ? updated : p)));
+      showToast(`Status: ${updated.status}`, "info");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
+  }
+
+  async function deleteProject(id) {
+    try {
+      await api(`/projects/${id}`, { method: "DELETE" });
+      setProjects((prev) => prev.filter((p) => p.id !== id));
+      showToast("Project deleted", "info");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
+  }
+
+  // ---- Tasks ----
+  async function addTask(title) {
+    try {
+      const newTask = await api("/tasks", { method: "POST", body: { title } });
+      setTasks((prev) => [...prev, newTask]);
+      showToast("Task added");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
   }
 
   async function toggleTask(id) {
-    const authHeaders = { Authorization: `Bearer ${token}` };
-    const res = await fetch(`${API_URL}/tasks/${id}`, {
-      method: "PUT",
-      headers: authHeaders,
-    });
-    const updatedTask = await res.json();
-    setTasks((prev) =>
-      prev.map((task) => (task.id === id ? updatedTask : task))
-    );
-  }
-
-  async function addTask(title) {
-    const jsonAuthHeaders = {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    };
-    const res = await fetch(`${API_URL}/tasks`, {
-      method: "POST",
-      headers: jsonAuthHeaders,
-      body: JSON.stringify({ title }),
-    });
-    const newTask = await res.json();
-    setTasks((prev) => [...prev, newTask]);
+    try {
+      const updated = await api(`/tasks/${id}`, { method: "PUT" });
+      setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
+      if (updated.done) showToast("Task completed 🎉");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
   }
 
   async function deleteTask(id) {
-    const authHeaders = { Authorization: `Bearer ${token}` };
-    await fetch(`${API_URL}/tasks/${id}`, {
-      method: "DELETE",
-      headers: authHeaders,
-    });
-    setTasks((prev) => prev.filter((task) => task.id !== id));
+    try {
+      await api(`/tasks/${id}`, { method: "DELETE" });
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+      showToast("Task deleted", "info");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
   }
 
   const totalTopics = topics.length;

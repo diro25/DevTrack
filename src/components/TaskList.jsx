@@ -1,7 +1,10 @@
 import { useState } from "react";
 
+const TASK_FILTERS = ["All", "To do", "Done"];
+
 function TaskList({ tasks, onToggle, onAdd, onDelete }) {
   const [newTask, setNewTask] = useState("");
+  const [filter, setFilter] = useState("All");
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -14,6 +17,12 @@ function TaskList({ tasks, onToggle, onAdd, onDelete }) {
   const totalCount = tasks.length;
   const progress =
     totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
+
+  const visibleTasks = tasks.filter((task) => {
+    if (filter === "To do") return !task.done;
+    if (filter === "Done") return task.done;
+    return true;
+  });
 
   return (
     <section className="task-list">
@@ -32,11 +41,26 @@ function TaskList({ tasks, onToggle, onAdd, onDelete }) {
         <button type="submit">Add</button>
       </form>
 
+      <div className="filter-chips">
+        {TASK_FILTERS.map((f) => (
+          <button
+            type="button"
+            key={f}
+            className={filter === f ? "filter-chip active" : "filter-chip"}
+            onClick={() => setFilter(f)}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
+
       {tasks.length === 0 ? (
         <p className="empty-message">No tasks yet. Add your first task above.</p>
+      ) : visibleTasks.length === 0 ? (
+        <p className="empty-message">No tasks in this view.</p>
       ) : (
         <ul className="task-items">
-          {tasks.map((task) => (
+          {visibleTasks.map((task) => (
             <li key={task.id} className={task.done ? "task done" : "task"}>
               <span onClick={() => onToggle(task.id)} style={{ cursor: "pointer" }}>
                 {task.done ? "☑" : "☐"} {task.title}

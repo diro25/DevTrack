@@ -1,56 +1,49 @@
 import { useEffect, useState } from "react";
 import TopicList from "../components/TopicList";
-import { API_URL } from "../config";
+import { api } from "../api";
+import { useToast } from "../ToastContext";
 
 function Topics() {
+  const { showToast } = useToast();
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    fetch(`${API_URL}/topics`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => setTopics(data))
+    api("/topics")
+      .then(setTopics)
       .catch(() => setError("Could not load your topics. Is the server running?"))
       .finally(() => setLoading(false));
   }, []);
 
-  function deleteTopic(id) {
-    fetch(`${API_URL}/topics/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    }).then(() => {
-      setTopics((prev) => prev.filter((topic) => topic.id !== id));
-    });
+  async function addTopic(title) {
+    try {
+      const newTopic = await api("/topics", { method: "POST", body: { title } });
+      setTopics((prev) => [...prev, newTopic]);
+      showToast("Topic added");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
   }
 
-  function addTopic(title) {
-    fetch(`${API_URL}/topics`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ title }),
-    })
-      .then((res) => res.json())
-      .then((newTopic) => setTopics((prev) => [...prev, newTopic]));
+  async function toggleTopic(id) {
+    try {
+      const updated = await api(`/topics/${id}`, { method: "PUT" });
+      setTopics((prev) => prev.map((t) => (t.id === id ? updated : t)));
+      showToast(`Status: ${updated.status}`, "info");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
   }
 
-  function toggleTopic(id) {
-    fetch(`${API_URL}/topics/${id}`, {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((updatedTopic) => {
-        setTopics((prev) =>
-          prev.map((topic) => (topic.id === id ? updatedTopic : topic))
-        );
-      });
+  async function deleteTopic(id) {
+    try {
+      await api(`/topics/${id}`, { method: "DELETE" });
+      setTopics((prev) => prev.filter((t) => t.id !== id));
+      showToast("Topic deleted", "info");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
   }
 
   if (loading) return <p className="loading-message">Loading topics...</p>;

@@ -297,3 +297,60 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+// ---- EDIT (rename) ----
+app.patch(
+  "/topics/:id",
+  requireAuth,
+  wrap(async (req, res) => {
+    const title = (req.body.title || "").trim();
+    if (!title) {
+      return res.status(400).json({ error: "Title is required" });
+    }
+
+    const rows = await sql.query(
+      "UPDATE topics SET title = $1 WHERE id = $2 AND user_id = $3 RETURNING *",
+      [title, req.itemId, req.userId]
+    );
+    if (rows.length === 0) return res.status(404).send();
+    res.json(rows[0]);
+  })
+);
+
+app.patch(
+  "/projects/:id",
+  requireAuth,
+  wrap(async (req, res) => {
+    const name = (req.body.name || "").trim();
+    const description = (req.body.description || "").trim();
+    if (!name || !description) {
+      return res
+        .status(400)
+        .json({ error: "Name and description are required" });
+    }
+
+    const rows = await sql.query(
+      "UPDATE projects SET name = $1, description = $2 WHERE id = $3 AND user_id = $4 RETURNING *",
+      [name, description, req.itemId, req.userId]
+    );
+    if (rows.length === 0) return res.status(404).send();
+    res.json(rows[0]);
+  })
+);
+
+app.patch(
+  "/tasks/:id",
+  requireAuth,
+  wrap(async (req, res) => {
+    const title = (req.body.title || "").trim();
+    if (!title) {
+      return res.status(400).json({ error: "Title is required" });
+    }
+
+    const rows = await sql.query(
+      "UPDATE tasks SET title = $1 WHERE id = $2 AND user_id = $3 RETURNING *",
+      [title, req.itemId, req.userId]
+    );
+    if (rows.length === 0) return res.status(404).send();
+    res.json(rows[0]);
+  })
+);

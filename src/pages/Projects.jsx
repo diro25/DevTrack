@@ -1,56 +1,52 @@
 import { useEffect, useState } from "react";
 import ProjectList from "../components/ProjectList";
-import { API_URL } from "../config";
+import { api } from "../api";
+import { useToast } from "../ToastContext";
 
 function Projects() {
+  const { showToast } = useToast();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    fetch(`${API_URL}/projects`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => setProjects(data))
+    api("/projects")
+      .then(setProjects)
       .catch(() => setError("Could not load your projects. Is the server running?"))
       .finally(() => setLoading(false));
   }, []);
 
-  function deleteProject(id) {
-    fetch(`${API_URL}/projects/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    }).then(() => {
-      setProjects((prev) => prev.filter((project) => project.id !== id));
-    });
-  }
-
-  function addProject(name, description) {
-    fetch(`${API_URL}/projects`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ name, description }),
-    })
-      .then((res) => res.json())
-      .then((newProject) => setProjects((prev) => [...prev, newProject]));
-  }
-
-  function toggleProject(id) {
-    fetch(`${API_URL}/projects/${id}`, {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((updatedProject) => {
-        setProjects((prev) =>
-          prev.map((project) => (project.id === id ? updatedProject : project))
-        );
+  async function addProject(name, description) {
+    try {
+      const newProject = await api("/projects", {
+        method: "POST",
+        body: { name, description },
       });
+      setProjects((prev) => [...prev, newProject]);
+      showToast("Project added");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
+  }
+
+  async function toggleProject(id) {
+    try {
+      const updated = await api(`/projects/${id}`, { method: "PUT" });
+      setProjects((prev) => prev.map((p) => (p.id === id ? updated : p)));
+      showToast(`Status: ${updated.status}`, "info");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
+  }
+
+  async function deleteProject(id) {
+    try {
+      await api(`/projects/${id}`, { method: "DELETE" });
+      setProjects((prev) => prev.filter((p) => p.id !== id));
+      showToast("Project deleted", "info");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
   }
 
   if (loading) return <p className="loading-message">Loading projects...</p>;
