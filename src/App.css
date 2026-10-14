@@ -841,3 +841,126 @@ button:active {
   font-size: 14px;
   margin: 4px 0 12px;
 }
+/* Edit mode */
+.card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.card-actions button {
+  margin-top: 0;
+}
+
+.topic-card .edit-btn,
+.project-card .edit-btn {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.topic-card .edit-btn:hover,
+.project-card .edit-btn:hover {
+  background: #c7d2fe;
+}
+
+.topic-card .save-btn,
+.project-card .save-btn {
+  background: #16a34a;
+  color: white;
+}
+
+.topic-card .save-btn:hover,
+.project-card .save-btn:hover {
+  background: #15803d;
+}
+
+.topic-card .cancel-btn,
+.project-card .cancel-btn {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.topic-card .cancel-btn:hover,
+.project-card .cancel-btn:hover {
+  background: #d1d5db;
+}
+
+.topic-card.editing,
+.project-card.editing {
+  cursor: default;
+}
+
+.topic-card.editing:hover,
+.project-card.editing:hover {
+  transform: none;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.edit-input {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 15px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.edit-input:focus {
+  outline: 2px solid #4f46e5;
+  border-color: transparent;
+}
+
+/* Task editing */
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.task-edit-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 8px;
+}
+
+.task-edit-btn:hover {
+  color: #4f46e5;
+}
+
+.task-edit-form {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  align-items: center;
+}
+
+.task-edit-form .edit-input {
+  flex: 1;
+  padding: 6px 10px;
+}
+
+.task-edit-form button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.task-edit-form .save-btn {
+  background: #16a34a;
+  color: white;
+}
+
+.task-edit-form .cancel-btn {
+  background: #e5e7eb;
+  color: #374151;
+}

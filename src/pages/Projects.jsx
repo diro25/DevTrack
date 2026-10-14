@@ -39,6 +39,21 @@ function Projects() {
     }
   }
 
+  async function editProject(id, name, description) {
+    try {
+      const updated = await api(`/projects/${id}`, {
+        method: "PATCH",
+        body: { name, description },
+      });
+      setProjects((prev) => prev.map((p) => (p.id === id ? updated : p)));
+      showToast("Project updated");
+      return true;
+    } catch (err) {
+      showToast(err.message, "error");
+      return false;
+    }
+  }
+
   async function deleteProject(id) {
     try {
       await api(`/projects/${id}`, { method: "DELETE" });
@@ -60,6 +75,7 @@ function Projects() {
         onDelete={deleteProject}
         onAdd={addProject}
         onToggle={toggleProject}
+        onEdit={editProject}
       />
     </div>
   );

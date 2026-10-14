@@ -36,6 +36,21 @@ function Topics() {
     }
   }
 
+  async function editTopic(id, title) {
+    try {
+      const updated = await api(`/topics/${id}`, {
+        method: "PATCH",
+        body: { title },
+      });
+      setTopics((prev) => prev.map((t) => (t.id === id ? updated : t)));
+      showToast("Topic updated");
+      return true;
+    } catch (err) {
+      showToast(err.message, "error");
+      return false;
+    }
+  }
+
   async function deleteTopic(id) {
     try {
       await api(`/topics/${id}`, { method: "DELETE" });
@@ -57,6 +72,7 @@ function Topics() {
         onDelete={deleteTopic}
         onAdd={addTopic}
         onToggle={toggleTopic}
+        onEdit={editTopic}
       />
     </div>
   );

@@ -61,6 +61,21 @@ function Dashboard() {
     }
   }
 
+  async function editTopic(id, title) {
+    try {
+      const updated = await api(`/topics/${id}`, {
+        method: "PATCH",
+        body: { title },
+      });
+      setTopics((prev) => prev.map((t) => (t.id === id ? updated : t)));
+      showToast("Topic updated");
+      return true;
+    } catch (err) {
+      showToast(err.message, "error");
+      return false;
+    }
+  }
+
   async function deleteTopic(id) {
     try {
       await api(`/topics/${id}`, { method: "DELETE" });
@@ -95,6 +110,21 @@ function Dashboard() {
     }
   }
 
+  async function editProject(id, name, description) {
+    try {
+      const updated = await api(`/projects/${id}`, {
+        method: "PATCH",
+        body: { name, description },
+      });
+      setProjects((prev) => prev.map((p) => (p.id === id ? updated : p)));
+      showToast("Project updated");
+      return true;
+    } catch (err) {
+      showToast(err.message, "error");
+      return false;
+    }
+  }
+
   async function deleteProject(id) {
     try {
       await api(`/projects/${id}`, { method: "DELETE" });
@@ -123,6 +153,21 @@ function Dashboard() {
       if (updated.done) showToast("Task completed 🎉");
     } catch (err) {
       showToast(err.message, "error");
+    }
+  }
+
+  async function editTask(id, title) {
+    try {
+      const updated = await api(`/tasks/${id}`, {
+        method: "PATCH",
+        body: { title },
+      });
+      setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
+      showToast("Task updated");
+      return true;
+    } catch (err) {
+      showToast(err.message, "error");
+      return false;
     }
   }
 
@@ -189,18 +234,21 @@ function Dashboard() {
         onDelete={deleteTopic}
         onAdd={addTopic}
         onToggle={toggleTopic}
+        onEdit={editTopic}
       />
       <ProjectList
         projects={projects}
         onDelete={deleteProject}
         onAdd={addProject}
         onToggle={toggleProject}
+        onEdit={editProject}
       />
       <TaskList
         tasks={tasks}
         onToggle={toggleTask}
         onAdd={addTask}
         onDelete={deleteTask}
+        onEdit={editTask}
       />
     </div>
   );
