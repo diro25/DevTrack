@@ -4,15 +4,19 @@ A full-stack learning progress tracker for developers. Create an account, list t
 
 **Live app:** https://dev-track-vert.vercel.app
 
-> The backend runs on a free hosting plan that goes to sleep when idle. The first request after a quiet period can take 30–50 seconds. After that it responds normally.
+> The backend runs on a free hosting plan that goes to sleep when idle. The first request after a quiet period can take 30-50 seconds. After that it responds normally.
 
 ## Features
 
 - **User accounts**: register and log in, with passwords stored as bcrypt hashes
 - **Private data**: each account only ever sees its own topics, projects, and tasks
-- **Learning topics**: add topics, click one to cycle its status (Not Started → In Progress → Done)
-- **Projects**: track side projects with a name, description, and status
-- **Daily tasks**: add, complete, and delete tasks
+- **Learning topics**: add, rename, delete, and click a topic to cycle its status (Not Started → In Progress → Done)
+- **Projects**: track side projects with a name, description, and status, and edit them in place
+- **Daily tasks**: add, edit, complete, and delete tasks, with To do / Done filters
+- **Search and filters**: search topics and projects by text and narrow them by status
+- **Inline editing**: edit any item directly on its card, with Enter to save and Esc to cancel
+- **Instant feedback**: toast messages confirm every action and explain any error
+- **Smooth interface**: cards fade in, hover effects, and an animated progress bar
 - **Real progress bar**: calculated from how many of your topics are marked Done
 - **Loading and error states**: clear messages while data loads or if the server can't be reached
 - **Protected API**: the backend rejects any request without a valid login token
@@ -45,6 +49,8 @@ Every topic, task, and project row has a `user_id` linking it to its owner, and 
 
 The backend talks to Postgres through Neon's serverless driver (`@neondatabase/serverless`), which sends queries over HTTPS instead of a direct TCP connection. This works on networks that block the standard Postgres port.
 
+On the frontend, a small `api()` helper in `src/api.js` attaches the login token to every request and turns server errors into readable messages, and a `ToastContext` shows them to the user.
+
 ## API endpoints
 
 | Method | Route | Description | Auth |
@@ -54,14 +60,17 @@ The backend talks to Postgres through Neon's serverless driver (`@neondatabase/s
 | GET | `/topics` | List your topics | Yes |
 | POST | `/topics` | Add a topic | Yes |
 | PUT | `/topics/:id` | Cycle a topic's status | Yes |
+| PATCH | `/topics/:id` | Rename a topic | Yes |
 | DELETE | `/topics/:id` | Delete a topic | Yes |
 | GET | `/projects` | List your projects | Yes |
 | POST | `/projects` | Add a project | Yes |
 | PUT | `/projects/:id` | Cycle a project's status | Yes |
+| PATCH | `/projects/:id` | Edit a project's name and description | Yes |
 | DELETE | `/projects/:id` | Delete a project | Yes |
 | GET | `/tasks` | List your tasks | Yes |
 | POST | `/tasks` | Add a task | Yes |
 | PUT | `/tasks/:id` | Toggle a task done / not done | Yes |
+| PATCH | `/tasks/:id` | Rename a task | Yes |
 | DELETE | `/tasks/:id` | Delete a task | Yes |
 
 ## Run it locally
@@ -123,9 +132,9 @@ Secrets are never committed. `server/.env` is listed in `.gitignore`.
 
 - The free backend sleeps when idle, so the first request can be slow.
 - No password reset or email verification.
-- Topics and projects can be added, status-cycled, and deleted, but not renamed.
 - The login token is stored in the browser's `localStorage`.
 - No rate limiting on the API.
+- Items can't be reordered.
 
 ## What this project demonstrates
 
