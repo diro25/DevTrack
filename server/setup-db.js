@@ -18,7 +18,8 @@ async function setup() {
       id SERIAL PRIMARY KEY,
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       title TEXT NOT NULL,
-      status TEXT NOT NULL DEFAULT 'Not Started'
+      status TEXT NOT NULL DEFAULT 'Not Started',
+      completed_at TIMESTAMPTZ
     )
   `);
 
@@ -28,8 +29,9 @@ async function setup() {
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       title TEXT NOT NULL,
       done BOOLEAN NOT NULL DEFAULT FALSE,
-      due_date DATE
-      )
+      due_date DATE,
+      completed_at TIMESTAMPTZ
+    )
   `);
 
   await sql.query(`

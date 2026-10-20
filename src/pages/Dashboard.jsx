@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import TaskList from "../components/TaskList";
 import TopicList from "../components/TopicList";
 import ProjectList from "../components/ProjectList";
+import ActivityChart from "../components/ActivityChart";
 import { api } from "../api";
 import { useToast } from "../ToastContext";
 import { dueStatus } from "../dates";
@@ -239,6 +240,8 @@ function Dashboard() {
           </p>
         </div>
       </section>
+
+      <ActivityChart refreshKey={`${completedTasks}-${doneTopics}`} />
 
       <TopicList
         topics={topics}

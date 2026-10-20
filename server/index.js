@@ -35,6 +35,16 @@ function parseDueDate(value) {
   return value;
 }
 
+// True when the text is a real time zone name like "Africa/Addis_Ababa"
+function isValidTimeZone(tz) {
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: tz });
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
 // Sends any error inside an async route to the error handler at the bottom
 const wrap = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
@@ -167,9 +177,16 @@ app.put(
     );
     if (found.length === 0) return res.status(404).send();
 
+    const newStatus = nextStatus(found[0].status);
+
+    // Remember when a topic became Done; forget it when it leaves Done
     const rows = await sql.query(
-      "UPDATE topics SET status = $1 WHERE id = $2 AND user_id = $3 RETURNING *",
-      [nextStatus(found[0].status), req.itemId, req.userId]
+      `UPDATE topics
+       SET status = $1::text,
+           completed_at = CASE WHEN $1::text = 'Done' THEN NOW() ELSE NULL END
+       WHERE id = $2 AND user_id = $3
+       RETURNING *`,
+      [newStatus, req.itemId, req.userId]
     );
     res.json(rows[0]);
   })
@@ -330,8 +347,13 @@ app.put(
   "/tasks/:id",
   requireAuth,
   wrap(async (req, res) => {
+    // On the right side of SET, "done" still means the OLD value:
+    // if it was done, it becomes not done (time cleared); otherwise it gets the time.
     const rows = await sql.query(
-      `UPDATE tasks SET done = NOT done WHERE id = $1 AND user_id = $2
+      `UPDATE tasks
+       SET done = NOT done,
+           completed_at = CASE WHEN done THEN NULL ELSE NOW() END
+       WHERE id = $1 AND user_id = $2
        RETURNING ${TASK_COLUMNS}`,
       [req.itemId, req.userId]
     );
@@ -394,6 +416,42 @@ app.delete(
       req.userId,
     ]);
     res.status(204).send();
+  })
+);
+
+// ---- ACTIVITY (data for the chart) ----
+// GET /activity?days=7&tz=Africa/Addis_Ababa
+// Returns one row per day: how many tasks and topics were finished that day.
+app.get(
+  "/activity",
+  requireAuth,
+  wrap(async (req, res) => {
+    let days = parseInt(req.query.days, 10);
+    if (!Number.isInteger(days)) days = 7;
+    days = Math.min(Math.max(days, 1), 90);
+
+    const tz = req.query.tz || "UTC";
+    if (!isValidTimeZone(tz)) {
+      return res.status(400).json({ error: "Invalid time zone" });
+    }
+
+    const rows = await sql.query(
+      `WITH today AS (SELECT (NOW() AT TIME ZONE $2::text)::date AS d)
+       SELECT
+         (today.d - g.n)::text AS day,
+         (SELECT COUNT(*)::int FROM tasks t
+           WHERE t.user_id = $1
+             AND t.completed_at IS NOT NULL
+             AND (t.completed_at AT TIME ZONE $2::text)::date = today.d - g.n) AS tasks,
+         (SELECT COUNT(*)::int FROM topics p
+           WHERE p.user_id = $1
+             AND p.completed_at IS NOT NULL
+             AND (p.completed_at AT TIME ZONE $2::text)::date = today.d - g.n) AS topics
+       FROM today, generate_series(0, $3::int - 1) AS g(n)
+       ORDER BY day`,
+      [req.userId, tz, days]
+    );
+    res.json(rows);
   })
 );
 
