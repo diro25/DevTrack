@@ -1,6 +1,6 @@
 # DevTrack
 
-A full-stack learning progress tracker for developers. Create an account, list the topics you're studying, track your side projects, and keep a daily task list. Every account has its own private data.
+A full-stack learning progress tracker for developers. Create an account, list the topics you're studying, track your side projects, and keep a daily task list with due dates. Every account has its own private data.
 
 **Live app:** https://dev-track-vert.vercel.app
 
@@ -12,11 +12,14 @@ A full-stack learning progress tracker for developers. Create an account, list t
 - **Private data**: each account only ever sees its own topics, projects, and tasks
 - **Learning topics**: add, rename, delete, and click a topic to cycle its status (Not Started → In Progress → Done)
 - **Projects**: track side projects with a name, description, and status, and edit them in place
-- **Daily tasks**: add, edit, complete, and delete tasks, with To do / Done filters
+- **Daily tasks**: add, edit, complete, and delete tasks, with To do / Done / Overdue filters
+- **Due dates**: give tasks an optional due date and get Overdue, Due today, and upcoming labels, plus an Overdue counter on the dashboard
+- **Activity chart**: a 7-day bar chart of the tasks and topics you finished each day, grouped by your own time zone
 - **Search and filters**: search topics and projects by text and narrow them by status
 - **Inline editing**: edit any item directly on its card, with Enter to save and Esc to cancel
+- **Light and dark theme**: a toggle that remembers your choice and starts from your system preference
+- **Interactive background**: slowly drifting color shapes and a glow that follows the mouse (turned off for users who prefer reduced motion)
 - **Instant feedback**: toast messages confirm every action and explain any error
-- **Smooth interface**: cards fade in, hover effects, and an animated progress bar
 - **Real progress bar**: calculated from how many of your topics are marked Done
 - **Loading and error states**: clear messages while data loads or if the server can't be reached
 - **Protected API**: the backend rejects any request without a valid login token
@@ -40,8 +43,8 @@ Express API (Render)
       │  requireAuth middleware verifies the token
       ▼
 PostgreSQL (Neon)
-      users ─┬─ topics
-             ├─ tasks
+      users ─┬─ topics  (status, completed_at)
+             ├─ tasks   (done, due_date, completed_at)
              └─ projects
 ```
 
@@ -50,6 +53,8 @@ Every topic, task, and project row has a `user_id` linking it to its owner, and 
 The backend talks to Postgres through Neon's serverless driver (`@neondatabase/serverless`), which sends queries over HTTPS instead of a direct TCP connection. This works on networks that block the standard Postgres port.
 
 On the frontend, a small `api()` helper in `src/api.js` attaches the login token to every request and turns server errors into readable messages, and a `ToastContext` shows them to the user.
+
+The activity chart reads `completed_at` timestamps. The browser sends its time zone with the request, so a task finished late in the evening is counted on the correct local day.
 
 ## API endpoints
 
@@ -68,10 +73,11 @@ On the frontend, a small `api()` helper in `src/api.js` attaches the login token
 | PATCH | `/projects/:id` | Edit a project's name and description | Yes |
 | DELETE | `/projects/:id` | Delete a project | Yes |
 | GET | `/tasks` | List your tasks | Yes |
-| POST | `/tasks` | Add a task | Yes |
+| POST | `/tasks` | Add a task (optional `dueDate`) | Yes |
 | PUT | `/tasks/:id` | Toggle a task done / not done | Yes |
-| PATCH | `/tasks/:id` | Rename a task | Yes |
+| PATCH | `/tasks/:id` | Edit a task's title and/or due date | Yes |
 | DELETE | `/tasks/:id` | Delete a task | Yes |
+| GET | `/activity?days=7&tz=...` | Tasks and topics finished per day, for the chart | Yes |
 
 ## Run it locally
 
@@ -97,7 +103,7 @@ Generate a random secret with:
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-Create the tables (run once), then start the server:
+Create the tables (run once on a new database), then start the server:
 
 ```bash
 node setup-db.js
@@ -105,6 +111,13 @@ node index.js
 ```
 
 The API runs on `http://localhost:5000`.
+
+If you already have a database from an earlier version of this project, add the newer columns instead of running the setup again:
+
+```bash
+node migrate-due-dates.js
+node migrate-completed-at.js
+```
 
 **2. Frontend**
 
@@ -134,6 +147,7 @@ Secrets are never committed. `server/.env` is listed in `.gitignore`.
 - No password reset or email verification.
 - The login token is stored in the browser's `localStorage`.
 - No rate limiting on the API.
+- The activity chart only counts items finished after completion tracking was added, so older items don't appear.
 - Items can't be reordered.
 
 ## What this project demonstrates
