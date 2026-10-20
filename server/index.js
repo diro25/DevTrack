@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const rateLimit = require("express-rate-limit");
 const sql = require("./db");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -10,6 +11,10 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) throw new Error("JWT_SECRET is not set in server/.env");
+
+// How many proxy servers sit in front of this app (Render's setup decides this).
+// It lets the rate limiter see each visitor's real address.
+app.set("trust proxy", Number(process.env.TRUST_PROXY || 1));
 
 const STATUS_CYCLE = ["Not Started", "In Progress", "Done"];
 
@@ -53,6 +58,39 @@ const allowedOrigins = [process.env.FRONTEND_URL, "http://localhost:5173"].filte
 app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 
+// ---- RATE LIMITS ----
+// The limits are generous on purpose: many students share one campus network
+// address, so a strict limit could block innocent people.
+const limiterDefaults = {
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+};
+
+// Wrong-password guessing: only failed logins count toward the limit
+const loginLimiter = rateLimit({
+  ...limiterDefaults,
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  skipSuccessfulRequests: true,
+  message: { error: "Too many login attempts. Please wait 15 minutes and try again." },
+});
+
+const registerLimiter = rateLimit({
+  ...limiterDefaults,
+  windowMs: 60 * 60 * 1000,
+  limit: 30,
+  message: { error: "Too many sign-ups from this network. Please try again later." },
+});
+
+const apiLimiter = rateLimit({
+  ...limiterDefaults,
+  windowMs: 15 * 60 * 1000,
+  limit: 1000,
+  message: { error: "Too many requests. Please slow down and try again shortly." },
+});
+
+app.use(apiLimiter);
+
 // Checks that :id in the URL is a real number
 app.param("id", (req, res, next, value) => {
   const id = Number(value);
@@ -67,9 +105,15 @@ app.get("/", (req, res) => {
   res.send("DevTrack backend is running");
 });
 
+// TEMPORARY: used once to check the proxy count. Delete this route afterwards.
+app.get("/ip", (req, res) => {
+  res.json({ ip: req.ip, trustProxy: app.get("trust proxy") });
+});
+
 // ---- AUTH ----
 app.post(
   "/register",
+  registerLimiter,
   wrap(async (req, res) => {
     const name = (req.body.name || "").trim();
     const email = (req.body.email || "").trim().toLowerCase();
@@ -108,6 +152,7 @@ app.post(
 
 app.post(
   "/login",
+  loginLimiter,
   wrap(async (req, res) => {
     const email = (req.body.email || "").trim().toLowerCase();
     const password = req.body.password || "";
