@@ -964,3 +964,316 @@ button:active {
   background: #e5e7eb;
   color: #374151;
 }
+/* ===== Theme + interactive background ===== */
+#root {
+  background: transparent;
+}
+
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bg-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.55;
+  will-change: transform;
+}
+
+.blob-1 {
+  width: 420px;
+  height: 420px;
+  background: #c7d2fe;
+  top: -120px;
+  left: -100px;
+  animation: floatA 18s ease-in-out infinite;
+}
+
+.blob-2 {
+  width: 380px;
+  height: 380px;
+  background: #e9d5ff;
+  bottom: -140px;
+  right: -100px;
+  animation: floatB 22s ease-in-out infinite;
+}
+
+.blob-3 {
+  width: 300px;
+  height: 300px;
+  background: #bae6fd;
+  top: 40%;
+  left: 55%;
+  animation: floatC 26s ease-in-out infinite;
+}
+
+.bg-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.22), transparent 65%);
+  will-change: transform;
+}
+
+@keyframes floatA {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(70px, 50px); }
+}
+
+@keyframes floatB {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-60px, -70px); }
+}
+
+@keyframes floatC {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-80px, 60px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-blob { animation: none; }
+}
+
+/* Nav bar */
+.navbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 24px;
+  background: rgba(238, 238, 238, 0.7);
+  backdrop-filter: blur(8px);
+}
+
+.navbar a {
+  color: #4f46e5;
+  font-weight: 500;
+}
+
+.theme-toggle {
+  margin-left: auto;
+  padding: 8px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  background: white;
+  color: #374151;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  border-color: #4f46e5;
+}
+
+/* Cards are slightly see-through so the glow shows behind them */
+.stat-box,
+.progress-card,
+.topic-card,
+.project-card,
+.task-list,
+.auth-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+}
+
+/* ===== Dark theme ===== */
+html[data-theme="dark"] body {
+  background: #0d0e1f;
+  color: #e5e7eb;
+}
+
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4 {
+  color: #f3f4f6;
+}
+
+html[data-theme="dark"] p,
+html[data-theme="dark"] label {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .empty-message,
+html[data-theme="dark"] .results-count,
+html[data-theme="dark"] .stat-label,
+html[data-theme="dark"] .loading-message {
+  color: #9ca3af;
+}
+
+html[data-theme="dark"] .navbar {
+  background: rgba(20, 21, 42, 0.7);
+}
+
+html[data-theme="dark"] .navbar a,
+html[data-theme="dark"] .logout-btn {
+  color: #a5b4fc;
+}
+
+html[data-theme="dark"] .theme-toggle {
+  background: #14152a;
+  color: #e5e7eb;
+  border-color: #33365a;
+}
+
+html[data-theme="dark"] .stat-box,
+html[data-theme="dark"] .progress-card,
+html[data-theme="dark"] .topic-card,
+html[data-theme="dark"] .project-card,
+html[data-theme="dark"] .task-list,
+html[data-theme="dark"] .auth-card {
+  background: rgba(28, 29, 52, 0.78);
+  color: #e5e7eb;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] input {
+  background: #14152a;
+  color: #e5e7eb;
+  border-color: #33365a;
+}
+
+html[data-theme="dark"] input::placeholder {
+  color: #8b8fb0;
+}
+
+html[data-theme="dark"] .filter-chip {
+  background: #14152a;
+  color: #cbd5e1;
+  border-color: #33365a;
+}
+
+html[data-theme="dark"] .filter-chip.active {
+  background: #4f46e5;
+  color: #ffffff;
+  border-color: #4f46e5;
+}
+
+html[data-theme="dark"] .progress-bar-track {
+  background: #2c2e4a;
+}
+
+html[data-theme="dark"] .task {
+  border-bottom-color: #2c2e4a;
+}
+
+html[data-theme="dark"] .task:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+html[data-theme="dark"] .topic-card .edit-btn,
+html[data-theme="dark"] .project-card .edit-btn {
+  background: #312e81;
+  color: #c7d2fe;
+}
+
+html[data-theme="dark"] .topic-card .cancel-btn,
+html[data-theme="dark"] .project-card .cancel-btn,
+html[data-theme="dark"] .task-edit-form .cancel-btn {
+  background: #2c2e4a;
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .blob-1 { background: #4f46e5; opacity: 0.35; }
+html[data-theme="dark"] .blob-2 { background: #7c3aed; opacity: 0.3; }
+html[data-theme="dark"] .blob-3 { background: #0ea5e9; opacity: 0.22; }
+
+html[data-theme="dark"] .bg-glow {
+  background: radial-gradient(circle, rgba(129, 140, 248, 0.3), transparent 65%);
+}
+/* ===== Due dates ===== */
+.task-main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.task-form input[type="date"] {
+  flex: 0 0 auto;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+}
+
+.task-edit-form {
+  flex-wrap: wrap;
+}
+
+.task-edit-form .edit-date {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.due-badge {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.due-badge.overdue {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.due-badge.today {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.due-badge.upcoming {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.due-badge.done {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.task.done .due-badge {
+  text-decoration: none;
+}
+
+.stat-box.danger .stat-number {
+  color: #dc2626;
+}
+
+html[data-theme="dark"] input[type="date"] {
+  color-scheme: dark;
+}
+
+html[data-theme="dark"] .due-badge.overdue {
+  background: rgba(220, 38, 38, 0.2);
+  color: #fca5a5;
+}
+
+html[data-theme="dark"] .due-badge.today {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fcd34d;
+}
+
+html[data-theme="dark"] .due-badge.upcoming {
+  background: rgba(99, 102, 241, 0.25);
+  color: #c7d2fe;
+}
+
+html[data-theme="dark"] .due-badge.done {
+  background: rgba(255, 255, 255, 0.08);
+  color: #9ca3af;
+}

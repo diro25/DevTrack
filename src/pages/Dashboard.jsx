@@ -4,6 +4,7 @@ import TopicList from "../components/TopicList";
 import ProjectList from "../components/ProjectList";
 import { api } from "../api";
 import { useToast } from "../ToastContext";
+import { dueStatus } from "../dates";
 
 function Dashboard() {
   const { showToast } = useToast();
@@ -136,9 +137,12 @@ function Dashboard() {
   }
 
   // ---- Tasks ----
-  async function addTask(title) {
+  async function addTask(title, dueDate) {
     try {
-      const newTask = await api("/tasks", { method: "POST", body: { title } });
+      const newTask = await api("/tasks", {
+        method: "POST",
+        body: { title, dueDate: dueDate || null },
+      });
       setTasks((prev) => [...prev, newTask]);
       showToast("Task added");
     } catch (err) {
@@ -156,11 +160,11 @@ function Dashboard() {
     }
   }
 
-  async function editTask(id, title) {
+  async function editTask(id, title, dueDate) {
     try {
       const updated = await api(`/tasks/${id}`, {
         method: "PATCH",
-        body: { title },
+        body: { title, dueDate: dueDate || null },
       });
       setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
       showToast("Task updated");
@@ -185,6 +189,9 @@ function Dashboard() {
   const totalProjects = projects.length;
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((task) => task.done).length;
+  const overdueTasks = tasks.filter(
+    (task) => dueStatus(task.due_date, task.done) === "overdue"
+  ).length;
   const doneTopics = topics.filter((topic) => topic.status === "Done").length;
   const topicsProgress =
     totalTopics === 0 ? 0 : Math.round((doneTopics / totalTopics) * 100);
@@ -211,6 +218,10 @@ function Dashboard() {
             {completedTasks}/{totalTasks}
           </span>
           <span className="stat-label">Tasks Done</span>
+        </div>
+        <div className={overdueTasks > 0 ? "stat-box danger" : "stat-box"}>
+          <span className="stat-number">{overdueTasks}</span>
+          <span className="stat-label">Overdue</span>
         </div>
       </section>
 

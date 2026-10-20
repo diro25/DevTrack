@@ -27,8 +27,9 @@ async function setup() {
       id SERIAL PRIMARY KEY,
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       title TEXT NOT NULL,
-      done BOOLEAN NOT NULL DEFAULT FALSE
-    )
+      done BOOLEAN NOT NULL DEFAULT FALSE,
+      due_date DATE
+      )
   `);
 
   await sql.query(`
