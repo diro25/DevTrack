@@ -105,10 +105,7 @@ app.get("/", (req, res) => {
   res.send("DevTrack backend is running");
 });
 
-// TEMPORARY: used once to check the proxy count. Delete this route afterwards.
-app.get("/ip", (req, res) => {
-  res.json({ ip: req.ip, trustProxy: app.get("trust proxy") });
-});
+
 
 // ---- AUTH ----
 app.post(
