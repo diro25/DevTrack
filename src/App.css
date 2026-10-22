@@ -1542,3 +1542,14 @@ select {
     top: 12px;
   }
 }
+/* ===== Dark mode: task rows ===== */
+html[data-theme="dark"] .task,
+html[data-theme="dark"] .task-items li {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e5e7eb;
+  border: 1px solid #2c2e4a;
+}
+
+html[data-theme="dark"] .task.done {
+  color: #8b8fb0;
+}
