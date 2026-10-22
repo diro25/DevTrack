@@ -23,7 +23,19 @@ A full-stack learning progress tracker for developers. Create an account, list t
 - **Real progress bar**: calculated from how many of your topics are marked Done
 - **Loading and error states**: clear messages while data loads or if the server can't be reached
 - **Protected API**: the backend rejects any request without a valid login token
+## Screenshots
 
+| Dashboard (dark) | Dashboard (light) |
+|---|---|
+| ![Dashboard in dark mode](docs/screenshots/dashboard-dark.png) | ![Dashboard in light mode](docs/screenshots/dashboard-light.png) |
+
+| Tasks with due dates | Search, filters, and editing |
+|---|---|
+| ![Tasks with due date labels](docs/screenshots/tasks-due-dates.png) | ![Topics page with search and filters](docs/screenshots/topics-search.png) |
+
+**On a phone**
+
+<img src="docs/screenshots/mobile.png" alt="DevTrack on a phone" width="280">
 ## Tech stack
 
 | Layer | Technology | Hosted on |
