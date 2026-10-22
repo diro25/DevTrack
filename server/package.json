@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
-  },
+  "start": "node index.js",
+  "dev": "NODE_OPTIONS='--dns-result-order=ipv4first --no-network-family-autoselection' node index.js"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",

@@ -1553,3 +1553,118 @@ html[data-theme="dark"] .task-items li {
 html[data-theme="dark"] .task.done {
   color: #8b8fb0;
 }
+/* ===== Streak card ===== */
+.streak-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  padding: 18px 24px;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  margin: 16px 0;
+}
+
+.streak-card.hot {
+  border: 1px solid rgba(249, 115, 22, 0.35);
+}
+
+.streak-flame {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.streak-card.hot .streak-flame {
+  animation: flamePulse 1.8s ease-in-out infinite;
+}
+
+@keyframes flamePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .streak-card.hot .streak-flame { animation: none; }
+}
+
+.streak-main {
+  flex: 1;
+}
+
+.streak-number {
+  font-size: 26px;
+  font-weight: 700;
+  color: #4f46e5;
+  line-height: 1.1;
+}
+
+.streak-card.hot .streak-number {
+  color: #ea580c;
+}
+
+.streak-label {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.streak-message {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #374151;
+}
+
+.streak-best {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 18px;
+  border-left: 1px solid rgba(107, 114, 128, 0.3);
+}
+
+.streak-best-number {
+  font-size: 26px;
+  font-weight: 700;
+  color: #4f46e5;
+}
+
+.streak-best-label {
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.2;
+}
+
+html[data-theme="dark"] .streak-card {
+  background: rgba(28, 29, 52, 0.78);
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] .streak-card.hot .streak-number {
+  color: #fb923c;
+}
+
+html[data-theme="dark"] .streak-number,
+html[data-theme="dark"] .streak-best-number {
+  color: #a5b4fc;
+}
+
+html[data-theme="dark"] .streak-label,
+html[data-theme="dark"] .streak-best-label {
+  color: #9ca3af;
+}
+
+html[data-theme="dark"] .streak-message {
+  color: #cbd5e1;
+}
+
+@media (max-width: 600px) {
+  .streak-card {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .streak-best {
+    border-left: none;
+    padding-left: 0;
+  }
+}

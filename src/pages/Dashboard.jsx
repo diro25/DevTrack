@@ -3,6 +3,7 @@ import TaskList from "../components/TaskList";
 import TopicList from "../components/TopicList";
 import ProjectList from "../components/ProjectList";
 import ActivityChart from "../components/ActivityChart";
+import StreakCard from "../components/StreakCard";
 import { api } from "../api";
 import { useToast } from "../ToastContext";
 import { dueStatus } from "../dates";
@@ -241,6 +242,7 @@ function Dashboard() {
         </div>
       </section>
 
+      <StreakCard refreshKey={`${completedTasks}-${doneTopics}`} />
       <ActivityChart refreshKey={`${completedTasks}-${doneTopics}`} />
 
       <TopicList

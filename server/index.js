@@ -9,7 +9,7 @@ const requireAuth = require("./middleware");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET;
+const { JWT_SECRET } = process.env;
 if (!JWT_SECRET) throw new Error("JWT_SECRET is not set in server/.env");
 
 // How many proxy servers sit in front of this app (Render's setup decides this).
@@ -422,7 +422,7 @@ app.patch(
     );
     if (found.length === 0) return res.status(404).send();
 
-    let title = found[0].title;
+    let { title } = found[0];
     let dueDate = found[0].due_date;
 
     if (hasTitle) {
@@ -494,6 +494,65 @@ app.get(
       [req.userId, tz, days]
     );
     res.json(rows);
+  })
+);
+// ---- STREAK ----
+// GET /streak?tz=Africa/Addis_Ababa
+// A "streak" is consecutive days with at least one finished task or topic.
+function dayNumber(dayString) {
+  const [y, m, d] = dayString.split("-").map(Number);
+  return Math.round(Date.UTC(y, m - 1, d) / 86400000);
+}
+
+app.get(
+  "/streak",
+  requireAuth,
+  wrap(async (req, res) => {
+    const tz = req.query.tz || "UTC";
+    if (!isValidTimeZone(tz)) {
+      return res.status(400).json({ error: "Invalid time zone" });
+    }
+
+    const todayRows = await sql.query(
+      "SELECT (NOW() AT TIME ZONE $1::text)::date::text AS today",
+      [tz]
+    );
+    const [{ today }] = todayRows;
+
+    const rows = await sql.query(
+      `SELECT DISTINCT day::text AS day FROM (
+         SELECT (completed_at AT TIME ZONE $2::text)::date AS day
+         FROM tasks WHERE user_id = $1 AND completed_at IS NOT NULL
+         UNION ALL
+         SELECT (completed_at AT TIME ZONE $2::text)::date AS day
+         FROM topics WHERE user_id = $1 AND completed_at IS NOT NULL
+       ) d
+       ORDER BY day`,
+      [req.userId, tz]
+    );
+
+    const days = rows.map((r) => dayNumber(r.day)); // oldest first
+    const daySet = new Set(days);
+    const todayNum = dayNumber(today);
+    const activeToday = daySet.has(todayNum);
+
+    // Current streak: count back from today, or from yesterday if today is still empty
+    let current = 0;
+    let cursor = activeToday ? todayNum : todayNum - 1;
+    while (daySet.has(cursor)) {
+      current += 1;
+      cursor -= 1;
+    }
+
+    // Longest streak ever
+    let longest = 0;
+    let run = 0;
+    for (let i = 0; i < days.length; i++) {
+      run = i > 0 && days[i] === days[i - 1] + 1 ? run + 1 : 1;
+      if (run > longest) longest = run;
+    }
+
+    res.json({ current, longest, activeToday, totalDays: days.length });
   })
 );
 
