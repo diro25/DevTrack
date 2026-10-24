@@ -40,7 +40,9 @@ async function setup() {
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       name TEXT NOT NULL,
       description TEXT,
-      status TEXT NOT NULL DEFAULT 'Not Started'
+      status TEXT NOT NULL DEFAULT 'Not Started',
+      category TEXT,
+      completed_at TIMESTAMPTZ
     )
   `);
 

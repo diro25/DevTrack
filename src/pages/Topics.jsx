@@ -16,9 +16,12 @@ function Topics() {
       .finally(() => setLoading(false));
   }, []);
 
-  async function addTopic(title) {
+  async function addTopic(title, category) {
     try {
-      const newTopic = await api("/topics", { method: "POST", body: { title } });
+      const newTopic = await api("/topics", {
+        method: "POST",
+        body: { title, category: category || null },
+      });
       setTopics((prev) => [...prev, newTopic]);
       showToast("Topic added");
     } catch (err) {
@@ -36,11 +39,11 @@ function Topics() {
     }
   }
 
-  async function editTopic(id, title) {
+  async function editTopic(id, title, category) {
     try {
       const updated = await api(`/topics/${id}`, {
         method: "PATCH",
-        body: { title },
+        body: { title, category: category || null },
       });
       setTopics((prev) => prev.map((t) => (t.id === id ? updated : t)));
       showToast("Topic updated");

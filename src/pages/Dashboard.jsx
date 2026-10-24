@@ -4,6 +4,7 @@ import TopicList from "../components/TopicList";
 import ProjectList from "../components/ProjectList";
 import ActivityChart from "../components/ActivityChart";
 import StreakCard from "../components/StreakCard";
+import CategoryProgress from "../components/CategoryProgress";
 import { api } from "../api";
 import { useToast } from "../ToastContext";
 import { dueStatus } from "../dates";
@@ -44,9 +45,12 @@ function Dashboard() {
   }, []);
 
   // ---- Topics ----
-  async function addTopic(title) {
+  async function addTopic(title, category) {
     try {
-      const newTopic = await api("/topics", { method: "POST", body: { title } });
+      const newTopic = await api("/topics", {
+        method: "POST",
+        body: { title, category: category || null },
+      });
       setTopics((prev) => [...prev, newTopic]);
       showToast("Topic added");
     } catch (err) {
@@ -64,11 +68,11 @@ function Dashboard() {
     }
   }
 
-  async function editTopic(id, title) {
+  async function editTopic(id, title, category) {
     try {
       const updated = await api(`/topics/${id}`, {
         method: "PATCH",
-        body: { title },
+        body: { title, category: category || null },
       });
       setTopics((prev) => prev.map((t) => (t.id === id ? updated : t)));
       showToast("Topic updated");
@@ -241,7 +245,7 @@ function Dashboard() {
           </p>
         </div>
       </section>
-
+      <CategoryProgress topics={topics} />
       <StreakCard refreshKey={`${completedTasks}-${doneTopics}`} />
       <ActivityChart refreshKey={`${completedTasks}-${doneTopics}`} />
 

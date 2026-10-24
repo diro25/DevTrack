@@ -9,7 +9,7 @@ const requireAuth = require("./middleware");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const { JWT_SECRET } = process.env;
+const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) throw new Error("JWT_SECRET is not set in server/.env");
 
 // How many proxy servers sit in front of this app (Render's setup decides this).
@@ -38,6 +38,16 @@ function parseDueDate(value) {
     return undefined;
   }
   return value;
+}
+
+// Cleans up a category: trims it, collapses extra spaces, empty means "none".
+// Returns undefined when it is too long.
+function parseCategory(value) {
+  if (value === null || value === undefined) return null;
+  const category = String(value).trim().replace(/\s+/g, " ");
+  if (category === "") return null;
+  if (category.length > 30) return undefined;
+  return category;
 }
 
 // True when the text is a real time zone name like "Africa/Addis_Ababa"
@@ -104,8 +114,6 @@ app.param("id", (req, res, next, value) => {
 app.get("/", (req, res) => {
   res.send("DevTrack backend is running");
 });
-
-
 
 // ---- AUTH ----
 app.post(
@@ -201,9 +209,16 @@ app.post(
       return res.status(400).json({ error: "Title is required" });
     }
 
+    const category = parseCategory(req.body.category);
+    if (category === undefined) {
+      return res
+        .status(400)
+        .json({ error: "Category must be 30 characters or fewer" });
+    }
+
     const rows = await sql.query(
-      "INSERT INTO topics (user_id, title, status) VALUES ($1, $2, 'Not Started') RETURNING *",
-      [req.userId, title]
+      "INSERT INTO topics (user_id, title, status, category) VALUES ($1, $2, 'Not Started', $3) RETURNING *",
+      [req.userId, title, category]
     );
     res.status(201).json(rows[0]);
   })
@@ -234,20 +249,47 @@ app.put(
   })
 );
 
+// Edit a topic's title and/or category (send only what you want to change)
 app.patch(
   "/topics/:id",
   requireAuth,
   wrap(async (req, res) => {
-    const title = (req.body.title || "").trim();
-    if (!title) {
-      return res.status(400).json({ error: "Title is required" });
+    const hasTitle = req.body.title !== undefined;
+    const hasCategory = req.body.category !== undefined;
+
+    if (!hasTitle && !hasCategory) {
+      return res.status(400).json({ error: "Nothing to update" });
+    }
+
+    const found = await sql.query(
+      "SELECT * FROM topics WHERE id = $1 AND user_id = $2",
+      [req.itemId, req.userId]
+    );
+    if (found.length === 0) return res.status(404).send();
+
+    let title = found[0].title;
+    let category = found[0].category;
+
+    if (hasTitle) {
+      title = String(req.body.title).trim();
+      if (!title) {
+        return res.status(400).json({ error: "Title is required" });
+      }
+    }
+
+    if (hasCategory) {
+      category = parseCategory(req.body.category);
+      if (category === undefined) {
+        return res
+          .status(400)
+          .json({ error: "Category must be 30 characters or fewer" });
+      }
     }
 
     const rows = await sql.query(
-      "UPDATE topics SET title = $1 WHERE id = $2 AND user_id = $3 RETURNING *",
-      [title, req.itemId, req.userId]
+      "UPDATE topics SET title = $1, category = $2 WHERE id = $3 AND user_id = $4 RETURNING *",
+      [title, category, req.itemId, req.userId]
     );
-    if (rows.length === 0) return res.status(404).send();
     res.json(rows[0]);
   })
 );
@@ -422,7 +464,7 @@ app.patch(
     );
     if (found.length === 0) return res.status(404).send();
 
-    let { title } = found[0];
+    let title = found[0].title;
     let dueDate = found[0].due_date;
 
     if (hasTitle) {
@@ -496,6 +538,7 @@ app.get(
     res.json(rows);
   })
 );
+
 // ---- STREAK ----
 // GET /streak?tz=Africa/Addis_Ababa
 // A "streak" is consecutive days with at least one finished task or topic.
@@ -517,7 +560,7 @@ app.get(
       "SELECT (NOW() AT TIME ZONE $1::text)::date::text AS today",
       [tz]
     );
-    const [{ today }] = todayRows;
+    const today = todayRows[0].today;
 
     const rows = await sql.query(
       `SELECT DISTINCT day::text AS day FROM (
