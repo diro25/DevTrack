@@ -54,6 +54,20 @@ function Topics() {
     }
   }
 
+  async function reorderTopics(newList) {
+    const previous = topics;
+    setTopics(newList); // show the new order immediately
+    try {
+      await api("/reorder/topics", {
+        method: "PUT",
+        body: { ids: newList.map((t) => t.id) },
+      });
+    } catch (err) {
+      setTopics(previous); // saving failed, so put the old order back
+      showToast(err.message, "error");
+    }
+  }
+
   async function deleteTopic(id) {
     try {
       await api(`/topics/${id}`, { method: "DELETE" });
@@ -76,6 +90,7 @@ function Topics() {
         onAdd={addTopic}
         onToggle={toggleTopic}
         onEdit={editTopic}
+        onReorder={reorderTopics}
       />
     </div>
   );

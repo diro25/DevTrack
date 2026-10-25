@@ -53,6 +53,19 @@ function Projects() {
       return false;
     }
   }
+    async function reorderProjects(newList) {
+    const previous = projects;
+    setProjects(newList); // show the new order immediately
+    try {
+      await api("/reorder/projects", {
+        method: "PUT",
+        body: { ids: newList.map((p) => p.id) },
+      });
+    } catch (err) {
+      setProjects(previous); // saving failed, so put the old order back
+      showToast(err.message, "error");
+    }
+  }
 
   async function deleteProject(id) {
     try {
@@ -76,6 +89,7 @@ function Projects() {
         onAdd={addProject}
         onToggle={toggleProject}
         onEdit={editProject}
+        onReorder={reorderProjects}
       />
     </div>
   );

@@ -19,6 +19,8 @@ async function setup() {
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       title TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'Not Started',
+      category TEXT,
+      position INTEGER,
       completed_at TIMESTAMPTZ
     )
   `);
@@ -30,6 +32,7 @@ async function setup() {
       title TEXT NOT NULL,
       done BOOLEAN NOT NULL DEFAULT FALSE,
       due_date DATE,
+      position INTEGER,
       completed_at TIMESTAMPTZ
     )
   `);
@@ -41,8 +44,7 @@ async function setup() {
       name TEXT NOT NULL,
       description TEXT,
       status TEXT NOT NULL DEFAULT 'Not Started',
-      category TEXT,
-      completed_at TIMESTAMPTZ
+      position INTEGER
     )
   `);
 

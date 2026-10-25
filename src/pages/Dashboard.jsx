@@ -82,7 +82,47 @@ function Dashboard() {
       return false;
     }
   }
+    async function reorderTopics(newList) {
+    const previous = topics;
+    setTopics(newList); // show the new order immediately
+    try {
+      await api("/reorder/topics", {
+        method: "PUT",
+        body: { ids: newList.map((t) => t.id) },
+      });
+    } catch (err) {
+      setTopics(previous); // saving failed, so put the old order back
+      showToast(err.message, "error");
+    }
+  }
 
+  async function reorderProjects(newList) {
+    const previous = projects;
+    setProjects(newList);
+    try {
+      await api("/reorder/projects", {
+        method: "PUT",
+        body: { ids: newList.map((p) => p.id) },
+      });
+    } catch (err) {
+      setProjects(previous);
+      showToast(err.message, "error");
+    }
+  }
+
+  async function reorderTasks(newList) {
+    const previous = tasks;
+    setTasks(newList);
+    try {
+      await api("/reorder/tasks", {
+        method: "PUT",
+        body: { ids: newList.map((t) => t.id) },
+      });
+    } catch (err) {
+      setTasks(previous);
+      showToast(err.message, "error");
+    }
+  }
   async function deleteTopic(id) {
     try {
       await api(`/topics/${id}`, { method: "DELETE" });
@@ -249,19 +289,23 @@ function Dashboard() {
       <StreakCard refreshKey={`${completedTasks}-${doneTopics}`} />
       <ActivityChart refreshKey={`${completedTasks}-${doneTopics}`} />
 
+      ```jsx
       <TopicList
         topics={topics}
         onDelete={deleteTopic}
         onAdd={addTopic}
         onToggle={toggleTopic}
         onEdit={editTopic}
+        onReorder={reorderTopics}
       />
+```
       <ProjectList
         projects={projects}
         onDelete={deleteProject}
         onAdd={addProject}
         onToggle={toggleProject}
         onEdit={editProject}
+        onReorder={reorderProjects}
       />
       <TaskList
         tasks={tasks}
@@ -269,6 +313,7 @@ function Dashboard() {
         onAdd={addTask}
         onDelete={deleteTask}
         onEdit={editTask}
+        onReorder={reorderTasks}
       />
     </div>
   );

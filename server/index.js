@@ -187,13 +187,51 @@ app.post(
   })
 );
 
+// ---- REORDER (drag and drop) ----
+// PUT /reorder/topics   body: { "ids": [5, 2, 9] }
+// Saves the order of the user's items. Items not in the list keep their old position.
+const REORDERABLE = ["topics", "projects", "tasks"];
+
+app.put(
+  "/reorder/:table",
+  requireAuth,
+  wrap(async (req, res) => {
+    const table = req.params.table;
+    if (!REORDERABLE.includes(table)) {
+      return res.status(404).json({ error: "Unknown list" });
+    }
+
+    const ids = req.body.ids;
+    if (
+      !Array.isArray(ids) ||
+      ids.length === 0 ||
+      ids.length > 1000 ||
+      !ids.every((id) => Number.isInteger(id)) ||
+      new Set(ids).size !== ids.length
+    ) {
+      return res.status(400).json({ error: "ids must be a list of unique numbers" });
+    }
+
+    // The table name comes from the fixed list above, never from the user's own text
+    await sql.query(
+      `UPDATE ${table} t
+       SET "position" = o.pos
+       FROM jsonb_array_elements_text($2::jsonb) WITH ORDINALITY AS o(val, pos)
+       WHERE t.id = o.val::int AND t.user_id = $1`,
+      [req.userId, JSON.stringify(ids)]
+    );
+
+    res.json({ ok: true });
+  })
+);
+
 // ---- TOPICS ----
 app.get(
   "/topics",
   requireAuth,
   wrap(async (req, res) => {
     const rows = await sql.query(
-      "SELECT * FROM topics WHERE user_id = $1 ORDER BY id",
+      `SELECT * FROM topics WHERE user_id = $1 ORDER BY "position" ASC NULLS LAST, id`,
       [req.userId]
     );
     res.json(rows);
@@ -217,7 +255,10 @@ app.post(
     }
 
     const rows = await sql.query(
-      "INSERT INTO topics (user_id, title, status, category) VALUES ($1, $2, 'Not Started', $3) RETURNING *",
+      `INSERT INTO topics (user_id, title, status, category, "position")
+       VALUES ($1, $2, 'Not Started', $3,
+         (SELECT COALESCE(MAX("position"), 0) + 1 FROM topics WHERE user_id = $1))
+       RETURNING *`,
       [req.userId, title, category]
     );
     res.status(201).json(rows[0]);
@@ -312,7 +353,7 @@ app.get(
   requireAuth,
   wrap(async (req, res) => {
     const rows = await sql.query(
-      "SELECT * FROM projects WHERE user_id = $1 ORDER BY id",
+      `SELECT * FROM projects WHERE user_id = $1 ORDER BY "position" ASC NULLS LAST, id`,
       [req.userId]
     );
     res.json(rows);
@@ -332,7 +373,10 @@ app.post(
     }
 
     const rows = await sql.query(
-      "INSERT INTO projects (user_id, name, description, status) VALUES ($1, $2, $3, 'Not Started') RETURNING *",
+      `INSERT INTO projects (user_id, name, description, status, "position")
+       VALUES ($1, $2, $3, 'Not Started',
+         (SELECT COALESCE(MAX("position"), 0) + 1 FROM projects WHERE user_id = $1))
+       RETURNING *`,
       [req.userId, name, description]
     );
     res.status(201).json(rows[0]);
@@ -396,7 +440,7 @@ app.get(
   requireAuth,
   wrap(async (req, res) => {
     const rows = await sql.query(
-      `SELECT ${TASK_COLUMNS} FROM tasks WHERE user_id = $1 ORDER BY id`,
+      `SELECT ${TASK_COLUMNS} FROM tasks WHERE user_id = $1 ORDER BY "position" ASC NULLS LAST, id`,
       [req.userId]
     );
     res.json(rows);
@@ -418,8 +462,9 @@ app.post(
     }
 
     const rows = await sql.query(
-      `INSERT INTO tasks (user_id, title, done, due_date)
-       VALUES ($1, $2, FALSE, $3::date)
+      `INSERT INTO tasks (user_id, title, done, due_date, "position")
+       VALUES ($1, $2, FALSE, $3::date,
+         (SELECT COALESCE(MAX("position"), 0) + 1 FROM tasks WHERE user_id = $1))
        RETURNING ${TASK_COLUMNS}`,
       [req.userId, title, dueDate]
     );
