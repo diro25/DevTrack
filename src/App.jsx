@@ -15,22 +15,23 @@ import Topics from "./pages/Topics";
 import Projects from "./pages/Projects";
 import AnimatedBackground from "./AnimatedBackground";
 import { ToastProvider, useToast } from "./ToastContext";
+import { ProtectedRoute, PublicOnlyRoute } from "./components/RouteGuards";
+import { isLoggedIn, clearSession } from "./auth";
 import "./App.css";
 
 function NavBar({ theme, onToggleTheme }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useToast();
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [loggedIn, setLoggedIn] = useState(isLoggedIn());
 
   useEffect(() => {
-    setToken(localStorage.getItem("token"));
+    setLoggedIn(isLoggedIn());
   }, [location]);
 
   function handleLogout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userName");
-    setToken(null);
+    clearSession();
+    setLoggedIn(false);
     showToast("You have been logged out", "info");
     navigate("/");
   }
@@ -38,7 +39,7 @@ function NavBar({ theme, onToggleTheme }) {
   return (
     <nav className="navbar">
       <Link to="/">Home</Link>
-      {token ? (
+      {loggedIn ? (
         <>
           <Link to="/dashboard">Dashboard</Link>
           <Link to="/topics">Topics</Link>
@@ -87,11 +88,46 @@ function App() {
         <NavBar theme={theme} onToggleTheme={toggleTheme} />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/topics" element={<Topics />} />
-          <Route path="/projects" element={<Projects />} />
+          <Route
+            path="/login"
+            element={
+              <PublicOnlyRoute>
+                <Login />
+              </PublicOnlyRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicOnlyRoute>
+                <Register />
+              </PublicOnlyRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/topics"
+            element={
+              <ProtectedRoute>
+                <Topics />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects"
+            element={
+              <ProtectedRoute>
+                <Projects />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </ToastProvider>
     </BrowserRouter>

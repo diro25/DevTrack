@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 
 function Login() {
@@ -7,6 +7,10 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const expired = new URLSearchParams(location.search).get("expired") === "1";
+  const destination = (location.state && location.state.from) || "/dashboard";
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -27,7 +31,7 @@ function Login() {
       .then((data) => {
         localStorage.setItem("token", data.token);
         localStorage.setItem("userName", data.name);
-        navigate("/dashboard");
+        navigate(destination, { replace: true });
       })
       .catch((err) => {
         setError(err.message);
@@ -40,6 +44,9 @@ function Login() {
         <h1>Login</h1>
         <p>Welcome back. Please enter your details.</p>
 
+        {expired && !error && (
+          <p className="auth-notice">Your session expired. Please log in again.</p>
+        )}
         {error && <p className="auth-error">{error}</p>}
 
         <form onSubmit={handleSubmit} className="auth-form">

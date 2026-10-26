@@ -1,4 +1,5 @@
 import { API_URL } from "./config";
+import { clearSession } from "./auth";
 
 export async function api(path, { method = "GET", body } = {}) {
   const token = localStorage.getItem("token");
@@ -17,6 +18,9 @@ export async function api(path, { method = "GET", body } = {}) {
   const data = await res.json().catch(() => null);
 
   if (res.status === 401) {
+    // The login is missing, invalid, or expired: clear it and go to the login page
+    clearSession();
+    window.location.assign("/login?expired=1");
     throw new Error("Session expired. Please log in again.");
   }
   if (!res.ok) {

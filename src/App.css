@@ -1875,3 +1875,17 @@ html[data-theme="dark"] .task-drag-handle:hover {
   background: rgba(165, 180, 252, 0.15);
   color: #c7d2fe;
 }
+/* ===== Login notice ===== */
+.auth-notice {
+  background: #e0e7ff;
+  color: #3730a3;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+html[data-theme="dark"] .auth-notice {
+  background: rgba(99, 102, 241, 0.22);
+  color: #c7d2fe;
+}
