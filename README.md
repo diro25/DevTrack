@@ -1,5 +1,7 @@
 # DevTrack
 
+[![Tests](https://github.com/diro25/DevTrack/actions/workflows/tests.yml/badge.svg)](https://github.com/diro25/DevTrack/actions/workflows/tests.yml)
+
 A full-stack learning progress tracker for developers. Create an account, list the topics you're studying, track your side projects, and keep a daily task list with due dates. Every account has its own private data.
 
 **Live app:** https://dev-track-vert.vercel.app
@@ -52,6 +54,7 @@ A full-stack learning progress tracker for developers. Create an account, list t
 | Database | PostgreSQL | Neon |
 | Auth | bcryptjs (password hashing), jsonwebtoken (JWT) | |
 | Protection | express-rate-limit, CORS restricted to the frontend domain | |
+| Testing | Node's built-in test runner, supertest, PGlite (in-memory Postgres) | GitHub Actions |
 
 ## Architecture
 
@@ -156,6 +159,28 @@ npm run dev
 
 The app runs on `http://localhost:5173`.
 
+## Run the tests
+
+```bash
+cd server
+npm test
+```
+
+The tests run the real Express app against a throwaway in-memory Postgres ([PGlite](https://pglite.dev)), so they need no database account, no `.env` file, and they can never touch real data. The table definitions live in `server/schema.js` and are shared by the setup script and the tests.
+
+What they cover:
+
+- **Accounts and login**: registration rules, hashed passwords, the same error for a wrong password and an unknown email, and the failed-login limit
+- **Tokens**: made-up, expired, and wrongly signed tokens are all rejected
+- **Topics, tasks, and projects**: creating, editing, completing, status cycling, deleting, and rejecting bad input such as blank titles, impossible dates, and over-long categories
+- **Privacy**: one user can never read, change, or delete another user's items
+- **Every private route** refuses a visitor without a token
+- **Reordering**: saved orders, new items going last, and refusing to move other users' items or accept unknown tables
+- **Activity chart and streaks**: counting by day and time zone, the current and longest streak, and undoing a finished item
+- **CORS**: only the project's own frontend is allowed
+
+GitHub Actions runs the whole suite on every push, and the badge at the top shows whether it is passing.
+
 ## Environment variables
 
 | Variable | Where | Purpose |
@@ -176,8 +201,8 @@ Secrets are never committed. `server/.env` is listed in `.gitignore`.
 - Rate-limit counters live in server memory, so they reset when the server restarts.
 - The activity chart and streak only count items finished after completion tracking was added, so older items don't appear.
 - Reordering works on the full list only, not while a search or filter is active.
-- No automated tests yet.
+- The tests cover the backend API. The React interface is not covered by automated tests yet.
 
 ## What this project demonstrates
 
-The complete request lifecycle of a real web application: a click in React becomes a `fetch` call, travels to Express, is rate limited and authenticated by middleware, reads or writes a SQL database, and returns JSON that updates the UI, with all data scoped to the logged-in user and the whole stack deployed online.
+The complete request lifecycle of a real web application: a click in React becomes a `fetch` call, travels to Express, is rate limited and authenticated by middleware, reads or writes a SQL database, and returns JSON that updates the UI, with all data scoped to the logged-in user, the backend covered by automated tests that run on every push, and the whole stack deployed online.
