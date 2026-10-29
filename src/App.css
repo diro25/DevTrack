@@ -1889,3 +1889,27 @@ html[data-theme="dark"] .auth-notice {
   background: rgba(99, 102, 241, 0.22);
   color: #c7d2fe;
 }
+/* ===== Server wake-up message ===== */
+.wake-banner {
+  background: #fef3c7;
+  color: #92400e;
+  border-bottom: 1px solid #fde68a;
+  padding: 10px 24px;
+  text-align: center;
+  font-size: 14px;
+}
+
+html[data-theme="dark"] .wake-banner {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+  border-bottom-color: rgba(245, 158, 11, 0.3);
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.auth-form button:disabled {
+  cursor: wait;
+}

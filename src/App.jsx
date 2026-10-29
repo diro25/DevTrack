@@ -14,6 +14,7 @@ import Dashboard from "./pages/Dashboard";
 import Topics from "./pages/Topics";
 import Projects from "./pages/Projects";
 import AnimatedBackground from "./AnimatedBackground";
+import WakeBanner from "./components/WakeBanner";
 import { ToastProvider, useToast } from "./ToastContext";
 import { ProtectedRoute, PublicOnlyRoute } from "./components/RouteGuards";
 import { isLoggedIn, clearSession } from "./auth";
@@ -86,6 +87,7 @@ function App() {
       <ToastProvider>
         <AnimatedBackground />
         <NavBar theme={theme} onToggleTheme={toggleTheme} />
+        <WakeBanner />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route
