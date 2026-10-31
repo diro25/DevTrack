@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 
 function Login() {
@@ -89,6 +89,10 @@ function Login() {
             {submitting ? "Logging in..." : "Login"}
           </button>
         </form>
+
+        <p className="auth-links">
+          <Link to="/forgot-password">Forgot your password?</Link>
+        </p>
       </div>
     </div>
   );

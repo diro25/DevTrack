@@ -1913,3 +1913,26 @@ button:disabled {
 .auth-form button:disabled {
   cursor: wait;
 }
+/* ===== Auth page links and hints ===== */
+.auth-links {
+  margin: 18px 0 0;
+  font-size: 14px;
+  text-align: center;
+}
+
+.auth-links a {
+  color: #4f46e5;
+}
+
+.auth-hint {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+html[data-theme="dark"] .auth-links a {
+  color: #a5b4fc;
+}
+
+html[data-theme="dark"] .auth-hint {
+  color: #9ca3af;
+}

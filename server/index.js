@@ -6,6 +6,7 @@ const sql = require("./db");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const requireAuth = require("./middleware");
+const passwordResetRoutes = require("./passwordReset");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -643,7 +644,7 @@ app.get(
     res.json({ current, longest, activeToday, totalDays: days.length });
   })
 );
-
+app.use(passwordResetRoutes);
 // Catches any error that happens inside a route
 app.use((err, req, res, next) => {
   console.error(err);

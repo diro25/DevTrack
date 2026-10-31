@@ -10,6 +10,8 @@ import { useState, useEffect } from "react";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Topics from "./pages/Topics";
 import Projects from "./pages/Projects";
@@ -103,6 +105,22 @@ function App() {
             element={
               <PublicOnlyRoute>
                 <Register />
+              </PublicOnlyRoute>
+            }
+          />
+                    <Route
+            path="/forgot-password"
+            element={
+              <PublicOnlyRoute>
+                <ForgotPassword />
+              </PublicOnlyRoute>
+            }
+          />
+          <Route
+            path="/reset-password"
+            element={
+              <PublicOnlyRoute>
+                <ResetPassword />
               </PublicOnlyRoute>
             }
           />
